@@ -1,0 +1,64 @@
+server:
+  port: 8080
+  ssl:
+    enabled: false
+#    key-store-type: PKCS12
+#    key-store: certs/mcp-server-keystore.p12
+#    key-store-password: ""
+#    key-alias: mcp-server
+#    trust-store-type: PKCS12
+#    trust-store: certs/mcp-clients-truststore.p12
+#    trust-store-password: ""
+#    client-auth: need  # need | want | none
+
+# ===========================================
+# ИСХОДЯЩИЕ СОЕДИНЕНИЯ
+# ===========================================
+crossover:
+  api:
+    base-url: https://ift.gate1.spaymentextra.ru
+    timeout: 30000
+#    ssl:
+#      verify: false
+#      accept-hostnames:
+#        - "*.spaymentextra.ru"
+#        - "*.spaymentplus.ru"
+#      bundle: crossover-mtls
+
+link:
+  api:
+    base-url: https://ift.kwapp.sberbank.ru
+    timeout-ms: 30000
+    ssl:
+      bundle: link-mtls
+
+spring:
+  ssl:
+    bundle:
+      pem:
+        link-mtls:
+          keystore:
+            certificate: classpath:certs/ift-cert.pem
+            private-key: classpath:certs/ift-cert-key.pem
+            password: qwe123
+          truststore:
+            certificate: classpath:certs/harica_root_ca_cert.pem
+        crossover-mtls:
+          keystore:
+            certificate: classpath:certs/ift-cert.pem
+            private-key: classpath:certs/ift-cert-key.pem
+            password: qwe123
+          truststore:
+            certificate: classpath:certs/harica_root_ca_cert.pem
+  ai:
+    mcp:
+      server:
+        name: sber-mcp-server
+        protocol: STREAMABLE
+        type: SYNC
+        version: 1.0.0 # TODO версия на что-то влияет?
+        description: MCP сервер, для взаимодействия с инструментами, предоставляемыми Sber
+        enabled: true
+        sse:
+          enabled: false
+          path: /mcp/sse
