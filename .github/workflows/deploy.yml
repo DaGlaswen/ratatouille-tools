@@ -91,7 +91,7 @@ jobs:
             cd /home/user1/ratatouille-debug
             
             # Find the latest JAR file
-            JAR_FILE=$(ls -t ratatouille-tools/target/*.jar | head -1)
+            JAR_FILE=$(ls -t target/*.jar | head -1)
             echo "📦 Deploying: $JAR_FILE"
             
             # Backup previous jar if exists

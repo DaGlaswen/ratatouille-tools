@@ -29,7 +29,8 @@ server:
 # ===========================================
 crossover:
   api:
-    base-url: https://ift.gate1.spaymentextra.ru
+#    base-url: https://ift.gate1.spaymentextra.ru
+    base-url: http://localhost:8008/
     timeout: 30000
 #    ssl:
 #      verify: false
