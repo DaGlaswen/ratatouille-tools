@@ -18,27 +18,18 @@ public class LinkRestClientConfig {
     private static final Logger logger = LoggerFactory.getLogger(LinkRestClientConfig.class);
 
     private final LinkApiProperties properties;
-    private final SslBundles sslBundles;
 
-    public LinkRestClientConfig(LinkApiProperties properties, SslBundles sslBundles) {
+    public LinkRestClientConfig(LinkApiProperties properties) {
         this.properties = properties;
-        this.sslBundles = sslBundles;
     }
 
     @Bean
     public RestClient linkRestClient() {
-        logger.info("Инициализация RestClient для LINK API: baseUrl={}, sslBundle={}", 
-                properties.getBaseUrl(), properties.getSslBundle());
-
-        SslBundle bundle = sslBundles.getBundle(properties.getSslBundle());
-        
         HttpClient httpClient = HttpClient.newBuilder()
-                .sslContext(bundle.createSslContext())
                 .connectTimeout(Duration.ofMillis(properties.getTimeoutMs()))
                 .build();
 
         var requestFactory = new JdkClientHttpRequestFactory(httpClient);
-//        requestFactory.setConnectTimeout(Duration.ofMillis(properties.getTimeoutMs()));
         requestFactory.setReadTimeout(Duration.ofMillis(properties.getTimeoutMs()));
 
         return RestClient.builder()

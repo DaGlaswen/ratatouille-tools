@@ -41,29 +41,29 @@ crossover:
 
 link:
   api:
-    base-url: https://ift.kwapp.sberbank.ru
+    base-url: http://localhost:8008/
     timeout-ms: 30000
     ssl:
       bundle: link-mtls
 
 spring:
-  ssl:
-    bundle:
-      pem:
-        link-mtls:
-          keystore:
-            certificate: classpath:certs/ift-cert.pem
-            private-key: classpath:certs/ift-cert-key.pem
-            password: qwe123
-          truststore:
-            certificate: classpath:certs/harica_root_ca_cert.pem
-        crossover-mtls:
-          keystore:
-            certificate: classpath:certs/ift-cert.pem
-            private-key: classpath:certs/ift-cert-key.pem
-            password: qwe123
-          truststore:
-            certificate: classpath:certs/harica_root_ca_cert.pem
+#  ssl:
+#    bundle:
+#      pem:
+#        link-mtls:
+#          keystore:
+#            certificate: classpath:certs/ift-cert.pem
+#            private-key: classpath:certs/ift-cert-key.pem
+#            password: qwe123
+#          truststore:
+#            certificate: classpath:certs/harica_root_ca_cert.pem
+#        crossover-mtls:
+#          keystore:
+#            certificate: classpath:certs/ift-cert.pem
+#            private-key: classpath:certs/ift-cert-key.pem
+#            password: qwe123
+#          truststore:
+#            certificate: classpath:certs/harica_root_ca_cert.pem
   ai:
     mcp:
       server:

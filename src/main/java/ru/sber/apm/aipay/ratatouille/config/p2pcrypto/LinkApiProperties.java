@@ -21,6 +21,6 @@ public class LinkApiProperties {
     @NotNull
     private Integer timeoutMs = 30000;
 
-    @NotBlank
-    private String sslBundle = "link-mtls";
+//    @NotBlank
+//    private String sslBundle = "link-mtls";
 }
