@@ -54,10 +54,16 @@ jobs:
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           port: ${{ secrets.SSH_PORT || 22 }}
           script: |
-            echo "Checking if port 9090 is in use..."
-            if lsof -ti:9090 > /dev/null; then
-            echo "Stopping processes on port 9090..."
-            lsof -ti:9090 | xargs kill -9 2>/dev/null || true
+            DEPLOY_LOCK="/tmp/ratatouille-deploy-debug.lock"
+            
+            echo "🔒 Creating deployment lock..."
+            touch "$DEPLOY_LOCK"
+            
+            echo "Checking if port 9096 is in use..."
+            PID=$(sudo lsof -ti :9096)
+              if sudo lsof -ti :9096 >/dev/null 2>&1; then
+              echo "Stopping processes on port, 9096..."
+              sudo kill -9 "$PID"
             fi
 
       - name: Upload JAR to project directory
@@ -69,7 +75,7 @@ jobs:
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           port: ${{ secrets.SSH_PORT || 22 }}
           source: "ratatouille-tools/target/*.jar"
-          target: "/home/user1/ratatouille/"
+          target: "/home/user1/ratatouille-debug/"
 
       - name: Deploy and start application
         uses: appleboy/ssh-action@v0.1.6
@@ -82,7 +88,7 @@ jobs:
           script: |
             set -e  # Exit on error
             
-            cd /home/user1/ratatouille
+            cd /home/user1/ratatouille-debug
             
             # Find the latest JAR file
             JAR_FILE=$(ls -t ratatouille-tools/target/*.jar | head -1)
@@ -110,7 +116,7 @@ jobs:
             # Health check with retry logic
             MAX_RETRIES=6
             RETRY_COUNT=0
-            until curl -f http://localhost:9090/actuator/health || [ $RETRY_COUNT -eq $MAX_RETRIES ]; do
+            until curl -f http://localhost:9096/actuator/health || [ $RETRY_COUNT -eq $MAX_RETRIES ]; do
               RETRY_COUNT=$((RETRY_COUNT+1))
               echo "❌ Health check failed, retry $RETRY_COUNT/$MAX_RETRIES..."
               sleep 10
@@ -127,4 +133,21 @@ jobs:
             
             echo "✅ Deployment successful! Application is healthy."
             echo "🌐 Health check response:"
-            curl -s http://localhost:9090/actuator/health | head -10
+            curl -s http://localhost:9096/actuator/health | head -10
+
+      - name: Clean Up
+        uses: appleboy/ssh-action@v0.1.6
+        if: always()
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            DEPLOY_LOCK="/tmp/ratatouille-deploy-debug.lock"
+            
+            if [ -f "$DEPLOY_LOCK" ]; then
+                echo "🔓 Removing deployment lock..."
+                rm -f "$DEPLOY_LOCK"
+            fi
