@@ -14,7 +14,8 @@ public class LinkConstants {
     public static final String ENDPOINT_WITHDRAW = API_PREFIX + "/wallet/{walletId}/withdraw";
 
     // Header names
-    public static final String HEADER_RQUID = "x-kw-rquid";
+    public static final String HEADER_RQUID = "x-kw-rquid"; // TODO точно такой naming? Или просто RqUID?
+    public static final String AGENT_USER_ID = "AgentUserID";
 
     // Coin types
     public static final String COIN_ETH = "ETH";

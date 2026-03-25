@@ -16,10 +16,10 @@ import jakarta.validation.constraints.NotBlank;
 public class CrossoverHeaders {
 
     /**
-     * Уникальный идентификатор партнера (обязательный)
+     * API KEY для авторизации
      */
     @NotBlank
-    private String apiKey;
+    private String authorization;
 
     /**
      * Время отправки запроса в формате ISO 8601 (обязательный)
@@ -43,7 +43,7 @@ public class CrossoverHeaders {
      */
     public static CrossoverHeaders of(@NotBlank String apiKey) {
         return CrossoverHeaders.builder()
-                .apiKey(apiKey)
+                .authorization("Bearer: " + apiKey)
                 .timestamp(java.time.Instant.now().toString())
                 .rqUID(java.util.UUID.randomUUID().toString())
                 .build();

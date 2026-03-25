@@ -25,10 +25,11 @@ public class GetDepositeAddressTool {
     @McpTool(description = "Получить адрес кошелька для пополнения (депозита) криптовалюты")
     public GetDepositeAddressResponse getDepositeAddress(
             @McpToolParam(description = "UUID кошелька для получения адреса депозита (обязательный)") String walletId,
+            @McpToolParam(description = "UUID пользователя") String agentUserID,
             @McpToolParam(description = "Уникальный идентификатор запроса (по умолчанию генерируется автоматически)", required = false) String rquid) {
 
         var parsedWalletId = LinkValidationUtil.requireValidUuid(walletId, "walletId");
-        var headers = LinkHeaders.of(rquid);
+        var headers = LinkHeaders.of(agentUserID, rquid);
 
         logger.info("Запрос адреса депозита: walletId={}, rquid={}", parsedWalletId, headers.getRquid());
 
@@ -37,6 +38,7 @@ public class GetDepositeAddressTool {
                         .path(LinkConstants.ENDPOINT_DEPOSITE_ADDRESS)
                         .build(parsedWalletId.toString()))
                 .header(LinkConstants.HEADER_RQUID, headers.getRquid())
+                .header(LinkConstants.AGENT_USER_ID, headers.getAgentUserID())
                 .retrieve()
                 .body(GetDepositeAddressResponse.class);
 

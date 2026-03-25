@@ -22,11 +22,15 @@ public class LinkHeaders {
     private String rquid;
 
     /**
-     * Фабричный метод для создания заголовков с генерацией RQUID
+     * AgentUserID - UUID пользователя (обязательный)
      */
-    public static LinkHeaders of() {
+    @NotBlank
+    private String agentUserID;
+
+    public static LinkHeaders of(String agentUserID, String rquid) {
         return LinkHeaders.builder()
-                .rquid(java.util.UUID.randomUUID().toString())
+                .agentUserID(agentUserID)
+                .rquid(rquid)
                 .build();
     }
 

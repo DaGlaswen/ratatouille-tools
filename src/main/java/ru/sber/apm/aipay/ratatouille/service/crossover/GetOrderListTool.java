@@ -43,7 +43,7 @@ public class GetOrderListTool {
                 limit != null ? limit : CrossoverConstants.DEFAULT_LIMIT);
 
         var headers = CrossoverHeaders.builder()
-                .apiKey(apiKey)
+                .authorization(apiKey)
                 .timestamp(java.time.Instant.now().toString())
                 .rqUID(rqUID != null ? rqUID : java.util.UUID.randomUUID().toString())
                 .localSessionId(localSessionId)
@@ -64,7 +64,7 @@ public class GetOrderListTool {
                     }
                     return uriBuilder.build();
                 })
-                .header(CrossoverConstants.HEADER_API_KEY, headers.getApiKey())
+                .header(CrossoverConstants.HEADER_AUTHORIZATION, headers.getAuthorization())
                 .header(CrossoverConstants.HEADER_TIMESTAMP, headers.getTimestamp())
                 .header(CrossoverConstants.HEADER_RQ_UID, headers.getRqUID())
                 .header(CrossoverConstants.HEADER_LOCAL_SESSION_ID, headers.getLocalSessionId())

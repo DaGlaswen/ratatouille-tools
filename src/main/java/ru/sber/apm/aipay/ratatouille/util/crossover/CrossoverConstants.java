@@ -21,7 +21,7 @@ public class CrossoverConstants {
     public static final String ENDPOINT_ORDER_DETAIL = API_PREFIX + "/order/{orderId}";
 
     // Header names
-    public static final String HEADER_API_KEY = "apiKey";
+    public static final String HEADER_AUTHORIZATION = "Authorization";
     public static final String HEADER_TIMESTAMP = "timestamp";
     public static final String HEADER_RQ_UID = "rqUID";
     public static final String HEADER_LOCAL_SESSION_ID = "localSessionId";

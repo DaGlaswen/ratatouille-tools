@@ -24,14 +24,15 @@ public class WithdrawTool {
     }
 
     @McpTool(description = "Вывести криптовалюту с кошелька на внешний адрес")
-    public Wallet execute(
+    public Wallet withdraw(
             @McpToolParam(description = "UUID кошелька для снятия средств (обязательный)") String walletId,
+            @McpToolParam(description = "UUID пользователя") String agentUserID,
             @McpToolParam(description = "Адрес получателя в блокчейне (начинается с 0x для EVM)") String to,
             @McpToolParam(description = "Сумма вывода в минимальных единицах монеты (wei для ETH, satoshi для BTC)") String value,
             @McpToolParam(description = "Уникальный идентификатор запроса (по умолчанию генерируется автоматически)", required = false) String rquid) {
 
         var parsedWalletId = LinkValidationUtil.requireValidUuid(walletId, "walletId");
-        
+
         // Валидация входных параметров
         if (!LinkValidationUtil.isValidEvmAddress(to)) {
             throw new IllegalArgumentException("Неверный формат адреса получателя: " + to);
@@ -40,8 +41,8 @@ public class WithdrawTool {
             throw new IllegalArgumentException("Неверный формат суммы: " + value);
         }
 
-        var headers = LinkHeaders.of(rquid);
-        
+        var headers = LinkHeaders.of(agentUserID, rquid);
+
         var request = WithdrawRequest.builder()
                 .to(to)
                 .value(value)
@@ -55,6 +56,7 @@ public class WithdrawTool {
                         .path(LinkConstants.ENDPOINT_WITHDRAW)
                         .build(parsedWalletId.toString()))
                 .header(LinkConstants.HEADER_RQUID, headers.getRquid())
+                .header(LinkConstants.AGENT_USER_ID, headers.getAgentUserID())
                 .body(request)
                 .retrieve()
                 .body(Wallet.class);

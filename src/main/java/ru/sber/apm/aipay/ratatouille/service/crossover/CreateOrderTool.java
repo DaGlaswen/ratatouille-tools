@@ -39,7 +39,7 @@ public class CreateOrderTool {
             @McpToolParam(description = "ID сессии на фронтенде (опционально)", required = false) String localSessionId) {
 
         var headers = CrossoverHeaders.builder()
-                .apiKey(apiKey)
+                .authorization(apiKey)
                 .timestamp(java.time.Instant.now().toString())
                 .rqUID(rqUID != null ? rqUID : java.util.UUID.randomUUID().toString())
                 .localSessionId(localSessionId)
@@ -68,7 +68,7 @@ public class CreateOrderTool {
 
         QR response = restClient.post()
                 .uri(CrossoverConstants.ENDPOINT_ORDER_CREATE)
-                .header(CrossoverConstants.HEADER_API_KEY, headers.getApiKey())
+                .header(CrossoverConstants.HEADER_AUTHORIZATION, headers.getAuthorization())
                 .header(CrossoverConstants.HEADER_TIMESTAMP, headers.getTimestamp())
                 .header(CrossoverConstants.HEADER_RQ_UID, headers.getRqUID())
                 .header(CrossoverConstants.HEADER_LOCAL_SESSION_ID, headers.getLocalSessionId())
