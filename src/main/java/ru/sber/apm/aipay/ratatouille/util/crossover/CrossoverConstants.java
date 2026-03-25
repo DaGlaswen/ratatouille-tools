@@ -44,5 +44,11 @@ public class CrossoverConstants {
     public static final int ERROR_CODE_BAD_REQUEST = 2;
     public static final int ERROR_CODE_INTERNAL_ERROR = 3;
     public static final int ERROR_CODE_UNAUTHORIZED = 4;
-    public static final int ERROR_CODE_SSL_ERROR = 5;
+    public static final int ERROR_CODE_FORBIDDEN = 5;
+    public static final int ERROR_CODE_CONFLICT = 6;
+    public static final int ERROR_CODE_RATE_LIMIT = 7;
+    public static final int ERROR_CODE_SERVICE_UNAVAILABLE = 8;
+    public static final int ERROR_CODE_GATEWAY_ERROR = 9;
+    public static final int ERROR_CODE_CONNECTION_ERROR = 10;
+    public static final int ERROR_CODE_TIMEOUT = 11;
 }

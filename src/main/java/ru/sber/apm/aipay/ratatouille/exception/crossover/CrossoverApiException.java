@@ -53,6 +53,30 @@ public class CrossoverApiException extends RuntimeException {
         );
     }
 
+    public static CrossoverApiException forbidden(String message) {
+        return new CrossoverApiException(
+            CrossoverConstants.ERROR_CODE_FORBIDDEN,
+            message,
+            HttpStatus.FORBIDDEN
+        );
+    }
+
+    public static CrossoverApiException conflict(String message) {
+        return new CrossoverApiException(
+            CrossoverConstants.ERROR_CODE_CONFLICT,
+            message,
+            HttpStatus.CONFLICT
+        );
+    }
+
+    public static CrossoverApiException rateLimitExceeded(String message) {
+        return new CrossoverApiException(
+            CrossoverConstants.ERROR_CODE_RATE_LIMIT,
+            message,
+            HttpStatus.TOO_MANY_REQUESTS
+        );
+    }
+
     public static CrossoverApiException internalError(String message, Throwable cause) {
         return new CrossoverApiException(
             CrossoverConstants.ERROR_CODE_INTERNAL_ERROR,
@@ -62,12 +86,37 @@ public class CrossoverApiException extends RuntimeException {
         );
     }
 
-    public static CrossoverApiException sslError(String message, Throwable cause) {
+    public static CrossoverApiException serviceUnavailable(String message) {
         return new CrossoverApiException(
-            CrossoverConstants.ERROR_CODE_SSL_ERROR,
-            "SSL ошибка: " + message,
+            CrossoverConstants.ERROR_CODE_SERVICE_UNAVAILABLE,
+            message,
+            HttpStatus.SERVICE_UNAVAILABLE
+        );
+    }
+
+    public static CrossoverApiException gatewayError(String message) {
+        return new CrossoverApiException(
+            CrossoverConstants.ERROR_CODE_GATEWAY_ERROR,
+            message,
+            HttpStatus.BAD_GATEWAY
+        );
+    }
+
+    public static CrossoverApiException connectionError(String message, Throwable cause) {
+        return new CrossoverApiException(
+            CrossoverConstants.ERROR_CODE_CONNECTION_ERROR,
+            "Ошибка соединения: " + message,
             HttpStatus.SERVICE_UNAVAILABLE,
             cause
+        );
+    }
+
+    public static CrossoverApiException timeoutError(String message) {
+        return new CrossoverApiException(
+            CrossoverConstants.ERROR_CODE_TIMEOUT,
+            "Таймаут запроса: " + message,
+            HttpStatus.GATEWAY_TIMEOUT,
+            null
         );
     }
 }
