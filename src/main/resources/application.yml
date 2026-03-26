@@ -30,6 +30,12 @@ crossover:
     timeout: 30000
     apiKey: ${IFT_CROSSOVER_API_KEY}
 
+logging:
+  level:
+    org.springframework.web.client: DEBUG
+    org.springframework.http: DEBUG
+    ru.sber.apm.aipay.ratatouille.service.p2pcrypto: DEBUG
+
 link:
   api:
     base-url: http://localhost:8018/
