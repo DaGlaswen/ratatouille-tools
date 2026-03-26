@@ -46,8 +46,7 @@ public class RegCartRequest {
     @AllArgsConstructor
     public static class CartItem {
         @NotNull
-        @org.hibernate.validator.constraints.UUID
-        private UUID productId;
+        private String productId;
 
         @NotNull
         @Min(0)

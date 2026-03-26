@@ -17,8 +17,7 @@ import java.util.UUID;
 public class MerchantInfo {
 
     @NotNull
-    @org.hibernate.validator.constraints.UUID
-    private UUID pointId;
+    private String pointId;
 
     @NotBlank
     private String name;

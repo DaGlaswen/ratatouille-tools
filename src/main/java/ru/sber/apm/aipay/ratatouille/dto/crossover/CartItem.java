@@ -16,8 +16,7 @@ import java.util.UUID;
 public class CartItem {
 
     @NotNull
-    @org.hibernate.validator.constraints.UUID
-    private UUID productId;
+    private String productId;
 
     private String name;
 
