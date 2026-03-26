@@ -50,7 +50,7 @@ public class GetProductListTool {
                     limit != null ? limit : CrossoverConstants.DEFAULT_LIMIT);
 
             var headers = CrossoverHeaders.builder()
-                    .authorization("Bearer " + crossoverApiProperties.getApiKey())
+                    .authorization(crossoverApiProperties.getApiKey())
                     .timestamp(java.time.Instant.now().toString())
                     .rqUID(rqUID != null ? rqUID : java.util.UUID.randomUUID().toString())
                     .localSessionId(localSessionId)

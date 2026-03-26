@@ -41,7 +41,7 @@ public class GetProductDetailTool {
             var parsedProductId = CrossoverValidationUtil.requireValidUuid(productId, "productId");
 
             var headers = CrossoverHeaders.builder()
-                    .authorization("Bearer " + crossoverApiProperties.getApiKey())
+                    .authorization(crossoverApiProperties.getApiKey())
                     .timestamp(java.time.Instant.now().toString())
                     .rqUID(rqUID != null ? rqUID : java.util.UUID.randomUUID().toString())
                     .localSessionId(localSessionId)
