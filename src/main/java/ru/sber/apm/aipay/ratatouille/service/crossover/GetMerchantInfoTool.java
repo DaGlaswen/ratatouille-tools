@@ -38,7 +38,7 @@ public class GetMerchantInfoTool {
 
         try {
             var headers = CrossoverHeaders.builder()
-                    .authorization("Bearer: " + crossoverApiProperties.getApiKey())
+                    .authorization("Bearer " + crossoverApiProperties.getApiKey())
                     .timestamp(java.time.Instant.now().toString())
                     .rqUID(rqUID != null ? rqUID : java.util.UUID.randomUUID().toString())
                     .localSessionId(localSessionId)

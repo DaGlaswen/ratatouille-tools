@@ -46,7 +46,7 @@ public class GetOrderDetailTool {
             UUID parsedExtBranchId = extBranchId != null ? CrossoverValidationUtil.parseUuidSafe(extBranchId) : null;
 
             var headers = CrossoverHeaders.builder()
-                    .authorization("Bearer: " + crossoverApiProperties.getApiKey())
+                    .authorization("Bearer " + crossoverApiProperties.getApiKey())
                     .timestamp(java.time.Instant.now().toString())
                     .rqUID(rqUID != null ? rqUID : java.util.UUID.randomUUID().toString())
                     .localSessionId(localSessionId)
