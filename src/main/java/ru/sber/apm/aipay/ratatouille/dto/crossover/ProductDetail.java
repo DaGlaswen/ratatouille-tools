@@ -17,5 +17,5 @@ public class ProductDetail extends Product {
 
     private String description;
 
-    private Map<String, String> specifications;
+    private String specifications;
 }
