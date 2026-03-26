@@ -13,8 +13,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class Category {
 
-    @org.hibernate.validator.constraints.UUID
-    private UUID id;
+    private String id;
 
     private String name;
 

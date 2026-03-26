@@ -18,8 +18,7 @@ import java.util.UUID;
 public class Product {
 
     @NotNull
-    @org.hibernate.validator.constraints.UUID
-    private UUID id;
+    private String id;
 
     @NotBlank
     private String name;
