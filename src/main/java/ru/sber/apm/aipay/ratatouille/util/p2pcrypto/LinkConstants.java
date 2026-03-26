@@ -7,7 +7,7 @@ public class LinkConstants {
 
     // API Version
     public static final String API_VERSION = "v0";
-    public static final String API_PREFIX = "/" + API_VERSION;
+    public static final String API_PREFIX = API_VERSION;
 
     // Endpoints
     public static final String ENDPOINT_WALLETS = API_PREFIX + "/wallet/";
