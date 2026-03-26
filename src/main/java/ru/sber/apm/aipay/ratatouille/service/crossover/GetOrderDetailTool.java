@@ -26,11 +26,11 @@ public class GetOrderDetailTool {
     private static final Logger logger = LoggerFactory.getLogger(GetOrderDetailTool.class);
 
     private final RestClient restClient;
-    private final CrossoverApiProperties properties;
+    private final CrossoverApiProperties crossoverApiProperties;
 
-    public GetOrderDetailTool(RestClient crossoverRestClient, CrossoverApiProperties properties) {
+    public GetOrderDetailTool(RestClient crossoverRestClient, CrossoverApiProperties crossoverApiProperties) {
         this.restClient = crossoverRestClient;
-        this.properties = properties;
+        this.crossoverApiProperties = crossoverApiProperties;
     }
 
     @McpTool(description = "Получить детальную информацию о заказе по его ID")
@@ -46,7 +46,7 @@ public class GetOrderDetailTool {
             UUID parsedExtBranchId = extBranchId != null ? CrossoverValidationUtil.parseUuidSafe(extBranchId) : null;
 
             var headers = CrossoverHeaders.builder()
-                    .authorization(properties.getApiKey())
+                    .authorization("Bearer: " + crossoverApiProperties.getApiKey())
                     .timestamp(java.time.Instant.now().toString())
                     .rqUID(rqUID != null ? rqUID : java.util.UUID.randomUUID().toString())
                     .localSessionId(localSessionId)

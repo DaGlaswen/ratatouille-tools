@@ -37,15 +37,9 @@ public class CrossoverHeaders {
      * Уникальный идентификатор сессии на фронтенде (опциональный)
      */
     private String localSessionId;
-
-    /**
-     * Фабричный метод для создания заголовков с генерацией недостающих полей
-     */
-    public static CrossoverHeaders of(@NotBlank String apiKey) {
-        return CrossoverHeaders.builder()
-                .authorization("Bearer: " + apiKey)
-                .timestamp(java.time.Instant.now().toString())
-                .rqUID(java.util.UUID.randomUUID().toString())
-                .build();
-    }
+//
+//    public CrossoverHeaders setAuthorization(String apiKey) {
+//        this.authorization = "Bearer: " + apiKey;
+//        return this;
+//    }
 }

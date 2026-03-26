@@ -23,11 +23,11 @@ public class GetMerchantInfoTool {
     private static final Logger logger = LoggerFactory.getLogger(GetMerchantInfoTool.class);
 
     private final RestClient restClient;
-    private final CrossoverApiProperties properties;
+    private final CrossoverApiProperties crossoverApiProperties;
 
-    public GetMerchantInfoTool(RestClient crossoverRestClient, CrossoverApiProperties properties) {
+    public GetMerchantInfoTool(RestClient crossoverRestClient, CrossoverApiProperties crossoverApiProperties) {
         this.restClient = crossoverRestClient;
-        this.properties = properties;
+        this.crossoverApiProperties = crossoverApiProperties;
     }
 
     @McpTool(description = "Получить информацию о партнере по его ID в системе 2GIS")
@@ -38,7 +38,7 @@ public class GetMerchantInfoTool {
 
         try {
             var headers = CrossoverHeaders.builder()
-                    .authorization(properties.getApiKey())
+                    .authorization("Bearer: " + crossoverApiProperties.getApiKey())
                     .timestamp(java.time.Instant.now().toString())
                     .rqUID(rqUID != null ? rqUID : java.util.UUID.randomUUID().toString())
                     .localSessionId(localSessionId)
