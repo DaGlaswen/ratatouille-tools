@@ -42,7 +42,7 @@ spring:
         name: sber-mcp-server
         protocol: STREAMABLE
         type: SYNC
-        version: 1.0.0 # TODO версия на что-то влияет?
+        version: 1.0.0
         description: MCP сервер, для взаимодействия с инструментами, предоставляемыми Sber
         enabled: true
         sse:
