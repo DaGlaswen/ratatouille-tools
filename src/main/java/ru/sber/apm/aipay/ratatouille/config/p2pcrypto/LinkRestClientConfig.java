@@ -36,7 +36,7 @@ public class LinkRestClientConfig {
                 .baseUrl(properties.getBaseUrl())
                 .requestFactory(requestFactory)
                 .defaultHeader("Content-Type", "application/json")
-                .defaultHeader("Accept", "application/json")
+//                .defaultHeader("Accept", "application/json")
                 .build();
     }
 }
