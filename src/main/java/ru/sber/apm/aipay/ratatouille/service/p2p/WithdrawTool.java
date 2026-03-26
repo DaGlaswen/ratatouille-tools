@@ -28,7 +28,7 @@ public class WithdrawTool {
     }
 
     @McpTool(description = "Вывести криптовалюту с кошелька на внешний адрес")
-    public Wallet execute(
+    public Wallet withdraw(
             @McpToolParam(description = "UUID кошелька для снятия средств (обязательный)") String walletId,
             @McpToolParam(description = "UUID пользователя") String agentUserID,
             @McpToolParam(description = "Адрес получателя в блокчейне (начинается с 0x для EVM)") String to,
