@@ -100,7 +100,15 @@ public class CreateWalletTool {
         } catch (IllegalArgumentException e) {
             logger.warn("Ошибка валидации параметров: {}", e.getMessage());
             throw LinkApiException.badRequest("Ошибка валидации: " + e.getMessage());
+        } catch (org.springframework.web.client.UnknownContentTypeException e) {
+            HttpStatusCode statusCode = e.getStatusCode();
+            String responseBody = e.getResponseBodyAsString();
 
+            logger.error("HTTP ошибка от LINK API при создании кошелька. Неизвестный content-type: status={}, body={}",
+                    statusCode, truncate(responseBody), e);
+
+            throw LinkApiException.internalError(
+                    "Неожиданная HTTP ошибка при создании кошелька: " + statusCode, e);
         } catch (Exception e) {
             logger.error("Неожиданная ошибка при создании кошелька: {}", e.getMessage(), e);
             throw LinkApiException.internalError("Неожиданная ошибка: " + e.getMessage(), e);
