@@ -62,7 +62,7 @@ public class CreateOrderTool {
                     .comment(comment)
                     .items(items != null ? items.stream()
                             .map(p -> RegCartRequest.CartItem.builder()
-                                    .productId(java.util.UUID.fromString(p.productId()))
+                                    .productId(p.productId())
                                     .quantity(p.quantity())
                                     .amount(p.amount())
                                     .build())
