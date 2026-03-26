@@ -58,6 +58,7 @@ public class GetMerchantInfoTool {
                     .retrieve()
                     .body(MerchantInfo.class);
 
+            logger.info("ЗАГОЛОВОК Authorization: {}", headers.getAuthorization());
             if (response == null) {
                 throw CrossoverApiException.notFound("Партнер", extBranchId);
             }
