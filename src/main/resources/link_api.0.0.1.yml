@@ -1,0 +1,2776 @@
+openapi: 3.0.1
+info:
+  title: LINK API
+  version: 0.0.1
+  description: Апи бэкенда Link
+servers:
+  - url: https://dev.kwapp.sberbank.ru
+    description: DEV
+  - url: https://ift.kwapp.sberbank.ru
+    description: IFT
+  - url: https://psi.kwapp.sberbank.ru
+    description: PSI
+paths:
+  /v0/linkConfig:
+    get:
+      tags:
+        - configuration
+      parameters:
+        - name: x-kw-rquid
+          description: Rquid - уникальный uuid запроса, генерируется на фронте
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+          in: header
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  withdraw:
+                    type: array
+                    maxItems: 100500
+                    items:
+                      type: object
+                      properties:
+                        token:
+                          description: Имя токена для которого применяются ограничения вывода, для MVP ожидаем только USDT
+                          type: string
+                        limitMin:
+                          description: Минимальный лимит вывода, в стринге цифра целых USDT (пока нет точности токена, ограничение MVP)
+                          type: string
+                        limitMax:
+                          description: Максимальный лимит вывода, в стринге цифра целых USDT (пока нет точности токена, ограничение MVP)
+                          type: string
+              examples:
+                withdraw:
+                  value:
+                    - token: USDT
+                      limitMin: '10'
+                      limitMax: '50'
+          description: OK
+      security:
+        - bearerAuth: []
+      summary: WithdrawConfig
+      description: Получение конфигурации ограничений вывода USDT (Для MVP вывода USDT)
+  /v0/auth/session-id/:
+    post:
+      requestBody:
+        description: Body
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SessionIDRequest'
+        required: true
+      tags:
+        - auth
+      parameters:
+        - name: cookie
+          description: Куки для авторизации от SberPay
+          schema:
+            type: string
+          in: cookie
+          required: true
+        - name: x-kw-rquid
+          description: Rquid - уникальный uuid запроса, генерируется на фронте
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+          in: header
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionIDResponse'
+          description: OK
+      summary: SessionID
+  /v0/auth/sdk-auth/:
+    post:
+      requestBody:
+        description: Тело запроса
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SDKAuthRequest'
+        required: true
+      tags:
+        - auth
+      parameters:
+        - name: x-kw-rquid
+          description: Rquid - уникальный uuid запроса, генерируется на фронте
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+          in: header
+          required: true
+        - name: cookie
+          description: Куки для авторизации от SberPay
+          schema:
+            type: string
+            example: X-Geo-Sticky=DM
+          in: cookie
+          required: true
+        - name: X-Pod-Sticky
+          description: rquid
+          schema:
+            type: string
+            example: 0ec35cc52cb49c3e5607b1370d36fa02
+          in: header
+          required: true
+        - name: X-B3-TraceId
+          description: rquid
+          schema:
+            type: string
+            example: 6bfd228dc00d216b
+          in: header
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SDKAuthResponse'
+          description: OK
+      summary: SdkAuth
+  /v0/auth/list-cards/:
+    post:
+      requestBody:
+        description: Тело запроса
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ListCardsRequest'
+        required: true
+      tags:
+        - auth
+      parameters:
+        - name: Cookie
+          description: Куки для авторизации от SberPay
+          schema:
+            type: string
+          in: header
+          required: true
+        - name: x-kw-rquid
+          description: Rquid - уникальный uuid запроса, генерируется на фронте
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+          in: header
+          required: true
+        - name: X-Pod-Sticky
+          description: rquid
+          schema:
+            type: string
+          in: header
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListCardsResponse'
+          description: OK
+      security:
+        - bearerAuth: []
+      summary: GetListCards
+      description: Получение списка карта пользователя
+  /v0/auth/refresh-tokens:
+    post:
+      requestBody:
+        description: Тело запроса
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshToken'
+        required: true
+      tags:
+        - auth
+      parameters:
+        - name: x-kw-rquid
+          description: Rquid - уникальный uuid запроса, генерируется на фронте
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+          in: header
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RefreshTokenResponse'
+          description: OK
+      summary: RefreshTokens
+      description: Обновление jwt токенов
+  /v0/auth/logout:
+    post:
+      requestBody:
+        description: Тело запроса
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshToken'
+        required: true
+      tags:
+        - auth
+      parameters:
+        - name: x-kw-rquid
+          description: Rquid - уникальный uuid запроса, генерируется на фронте
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+          in: header
+          required: true
+      responses:
+        '200':
+          description: Успешный logout
+      summary: Logout
+      description: Разлогиниться пользователем
+  /v0/exchange-rate/:
+    get:
+      tags:
+        - exchange_rates
+      parameters:
+        - name: x-kw-rquid
+          description: Rquid - уникальный uuid запроса, генерируется на фронте
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+          in: header
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                maxItems: 100500
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExchangeRate'
+              examples:
+                exchange_rate_array:
+                  value:
+                    - coin: ETH
+                      fiat_code: USD
+                      one_coin_price: '33683000'
+                    - coin: ETH
+                      fiat_code: RUB
+                      one_coin_price: '3462875100'
+                    - coin: ETH
+                      fiat_code: TRY
+                      one_coin_price: '1194424400'
+          description: OK
+      security:
+        - bearerAuth: []
+      summary: GetExchangeRatesOld
+      description: Получение списка курсов (Устаревшая ручка)
+  /v0/exrate/base:
+    get:
+      tags:
+        - exchange_rates
+      parameters:
+        - name: x-kw-rquid
+          description: Rquid - уникальный uuid запроса, генерируется на фронте
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+          in: header
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                maxItems: 100500
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExchangeRateV2'
+          description: OK
+      summary: GetExchangeRates
+      description: Получение списка курсов
+  /v0/exrate/base/{base}:
+    get:
+      tags:
+        - exchange_rates
+      parameters:
+        - name: x-kw-rquid
+          description: Rquid - уникальный uuid запроса, генерируется на фронте
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+          in: header
+          required: true
+        - name: base
+          description: Базовый курс
+          schema:
+            type: string
+          in: path
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                maxItems: 100500
+                type: array
+                items:
+                  $ref: '#/components/schemas/ExchangeRateV2'
+          description: OK
+      summary: GetExchangeRate
+      description: Получение курса по запросу
+  /v0/exrate/convert:
+    post:
+      requestBody:
+        description: Тело запроса
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConvertRequest'
+        required: true
+      tags:
+        - exchange_rates
+      parameters:
+        - name: x-kw-rquid
+          description: Rquid - уникальный uuid запроса, генерируется на фронте
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+          in: header
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConvertResponse'
+          description: OK
+      summary: Convert
+      description: Перевод валют
+  /v0/exrate/pair/{from}/{to}:
+    get:
+      tags:
+        - exchange_rates
+      parameters:
+        - name: x-kw-rquid
+          description: Rquid - уникальный uuid запроса, генерируется на фронте
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+          in: header
+          required: true
+        - name: from
+          description: Валюта из которой переводят
+          schema:
+            type: string
+          in: path
+          required: true
+        - name: to
+          description: Валюта в которую переводят
+          schema:
+            type: string
+          in: path
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExchangeRatePairV2'
+          description: OK
+      summary: GetExchangeRatePair
+      description: Получение пары курсов
+  /v0/merchant/:
+    post:
+      tags:
+        - merchant_account
+      parameters:
+        - name: x-kw-rquid
+          description: Rquid - уникальный uuid запроса, генерируется на фронте
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+          in: header
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MerchantInfo'
+          description: OK
+      security:
+        - bearerAuth: []
+      summary: GetMerchantAccount
+      description: Получение инфо об аккаунте мерчанта
+  /v0/merchant/auth/login:
+    post:
+      requestBody:
+        description: Тело запроса
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+        required: true
+      tags:
+        - merchant_auth
+      parameters:
+        - name: x-kw-rquid
+          description: Rquid - уникальный uuid запроса, генерируется на фронте
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+          in: header
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthMerchant'
+          description: OK
+      summary: LoginMerchant
+      description: Вход по логину и паролю мерчанта
+  /v0/merchant/auth/logout:
+    post:
+      requestBody:
+        description: Тело запроса
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogoutRequest'
+        required: true
+      tags:
+        - merchant_auth
+      parameters:
+        - name: x-kw-rquid
+          description: Rquid - уникальный uuid запроса, генерируется на фронте
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+          in: header
+          required: true
+      responses:
+        '200':
+          description: Успешный выход
+      summary: LogoutMerchant
+      description: Разлогин мерчанта
+  /v0/merchant/auth/refresh-tokens:
+    post:
+      requestBody:
+        description: Тело запроса
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshTokensRequest'
+        required: true
+      tags:
+        - merchant_auth
+      parameters:
+        - name: x-kw-rquid
+          description: Rquid - уникальный uuid запроса, генерируется на фронте
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+          in: header
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthTokens'
+          description: OK
+      summary: RefreshTokensMerchant
+      description: Обновление jwt токенов мерчанта
+  /v0/merchant/auth/register:
+    post:
+      requestBody:
+        description: Тело запроса
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistrationRequest'
+        required: true
+      tags:
+        - merchant_auth
+      parameters:
+        - name: x-kw-rquid
+          description: Rquid - уникальный uuid запроса, генерируется на фронте
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+          in: header
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthMerchant'
+          description: OK
+      summary: RegisterMerchant
+      description: Зарегестрировать мерчанта
+  /v0/merchant/edit:
+    post:
+      requestBody:
+        description: Тело запроса
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditMerchantInfo'
+        required: true
+      tags:
+        - merchant_account
+      parameters:
+        - name: x-kw-rquid
+          description: Rquid - уникальный uuid запроса, генерируется на фронте
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+          in: header
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Успешное редактирование данных
+      security:
+        - bearerAuth: []
+      summary: EditMerchantInfo
+      description: Редактировать данные мерчанта
+  /v0/merchant/orders/close:
+    post:
+      requestBody:
+        description: Тело запроса
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CloseOrderRequest'
+        required: true
+      tags:
+        - merchant_order
+      parameters:
+        - name: x-kw-rquid
+          description: Rquid - уникальный uuid запроса, генерируется на фронте
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+          in: header
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+          description: Успешное закрытие заказа
+      security:
+        - bearerAuth: []
+      summary: CloseOrder
+      description: Закрытие заказа
+  /v0/merchant/orders/create:
+    post:
+      requestBody:
+        description: Тело запроса
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrderRequest'
+        required: true
+      tags:
+        - merchant_order
+      parameters:
+        - name: x-kw-rquid
+          description: Rquid - уникальный uuid запроса, генерируется на фронте
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+          in: header
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateOrderResponse'
+          description: OK
+      security:
+        - bearerAuth: []
+      summary: CreateOrder
+      description: Создание заказа
+  /v0/merchant/orders/list:
+    post:
+      requestBody:
+        description: Тело запроса
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetMerchantOrdersRequest'
+        required: true
+      tags:
+        - merchant_order
+      parameters:
+        - name: x-kw-rquid
+          description: Rquid - уникальный uuid запроса, генерируется на фронте
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+          in: header
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetMerchantOrdersResponse'
+          description: OK
+      security:
+        - bearerAuth: []
+      summary: GetMerchantOrders
+      description: Получение списка заказов мерчанта
+  /v0/merchant/wallet/set-default:
+    post:
+      requestBody:
+        description: Тело запроса
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetDefaultWalletRequest'
+        required: true
+      tags:
+        - merchant_wallet
+      parameters:
+        - name: x-kw-rquid
+          description: Rquid - уникальный uuid запроса, генерируется на фронте
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+          in: header
+          required: true
+      responses:
+        '200':
+          description: Успешная установка кошелька
+      security:
+        - bearerAuth: []
+      summary: SetDefaultWalletMerchant
+      description: Установить кошелек мерчанта по умолчанию
+  /v0/orders/info:
+    post:
+      requestBody:
+        description: Тело запроса
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetOrderInfoRequest'
+        required: true
+      tags:
+        - orders
+      parameters:
+        - name: x-kw-rquid
+          description: Rquid - уникальный uuid запроса, генерируется на фронте
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+          in: header
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderInfo'
+          description: OK
+      security:
+        - bearerAuth: []
+      summary: GetOrderInfo
+      description: Получение информации о заказе
+  /v0/orders/list:
+    post:
+      requestBody:
+        description: Тело запроса
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetUserOrdersRequest'
+        required: true
+      tags:
+        - orders
+      parameters:
+        - name: x-kw-rquid
+          description: Rquid - уникальный uuid запроса, генерируется на фронте
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+          in: header
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetUserOrdersResponse'
+          description: OK
+      security:
+        - bearerAuth: []
+      summary: GetUserOrders
+      description: Получение списка заказов пользователя
+  /v0/orders/pay:
+    post:
+      requestBody:
+        description: Тело запроса
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PayOrderRequest'
+        required: true
+      tags:
+        - orders
+      parameters:
+        - name: x-kw-rquid
+          description: Rquid - уникальный uuid запроса, генерируется на фронте
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+          in: header
+          required: true
+      responses:
+        '200':
+          description: Успешная оплата заказа
+      security:
+        - bearerAuth: []
+      summary: PayOrder
+      description: Оплатить заказ
+  /v0/ticket/buy:
+    post:
+      requestBody:
+        description: Тело запроса
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BuyTicketRequest'
+        required: true
+      tags:
+        - tickets
+      parameters:
+        - name: x-kw-rquid
+          description: Rquid - уникальный uuid запроса, генерируется на фронте
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+          in: header
+          required: true
+      responses:
+        '200':
+          description: Успешная покупка тикета
+      security:
+        - bearerAuth: []
+      summary: BuyTicket
+      description: Запрос на покупку тикета
+  /v0/ticket/close:
+    post:
+      requestBody:
+        description: Тело запроса
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CloseTicketRequest'
+        required: true
+      tags:
+        - tickets
+      parameters:
+        - name: x-kw-rquid
+          description: Rquid - уникальный uuid запроса, генерируется на фронте
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+          in: header
+          required: true
+      responses:
+        '200':
+          description: Успешное закрытие тикета
+      security:
+        - bearerAuth: []
+      summary: CloseTicket
+      description: Запрос на закрытие тикета
+  /v0/ticket/create-ticket:
+    post:
+      requestBody:
+        description: Тело запроса
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTicketForSaleRequest'
+        required: true
+      tags:
+        - tickets
+      parameters:
+        - name: x-kw-rquid
+          description: Rquid - уникальный uuid запроса, генерируется на фронте
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+          in: header
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ticket'
+          description: OK
+      security:
+        - bearerAuth: []
+      summary: CreateTicketsForSale
+      description: Создание тикета на продажу
+  /v0/ticket/list:
+    description: Возвращает список тикетов (Все, кроме тикетов, которые принадлежат этому пользователя)
+    post:
+      requestBody:
+        description: Тело запроса
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetTicketListRequest'
+        required: true
+      tags:
+        - tickets
+      parameters:
+        - name: x-kw-rquid
+          description: Rquid - уникальный uuid запроса, генерируется на фронте
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+          in: header
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetTicketListResponse'
+          description: OK
+      security:
+        - bearerAuth: []
+      summary: GetTicketList
+      description: Получение списка тикетов для покупки
+  /v0/ticket/users-list:
+    description: Возвращает список тикетов (Тикеты которые принадлежат пользователю)
+    post:
+      requestBody:
+        description: Тело запроса
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GetUsersTicketListRequest'
+        required: true
+      tags:
+        - tickets
+      parameters:
+        - name: x-kw-rquid
+          description: Rquid - уникальный uuid запроса, генерируется на фронте
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+          in: header
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetUsersTicketListResponse'
+          description: OK
+      security:
+        - bearerAuth: []
+      summary: GetUsersTicketList
+      description: Получение списка тикетов пользователя
+  /v0/wallet/:
+    get:
+      tags:
+        - wallet
+      parameters:
+        - name: x-kw-rquid
+          description: Rquid - уникальный uuid запроса, генерируется на фронте
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+          in: header
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetWalletsResponseExtended'
+          description: OK
+      security:
+        - bearerAuth: []
+      summary: GetWallets
+      description: Получение списка кошельков пользователя
+    post:
+      requestBody:
+        description: Тело запроса
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateWallet'
+        required: true
+      tags:
+        - wallet
+      parameters:
+        - name: x-kw-rquid
+          description: rquid
+          schema:
+            type: string
+          in: header
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Wallet'
+          description: OK
+      security:
+        - bearerAuth: []
+      summary: CreateWallet
+      description: Создание кошелька пользователю
+  /v0/wallet/{wallet_id}/deposite-address:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      tags:
+        - wallet
+      parameters:
+        - examples:
+            wallet_id:
+              value: 0a67f8ae-bd10-4b22-ac13-d86f3517f110
+          name: wallet_id
+          description: uuid кошелька для пополнения
+          schema:
+            type: string
+          in: path
+          required: true
+        - name: x-kw-rquid
+          description: Rquid - уникальный uuid запроса, генерируется на фронте
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+          in: header
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetDepositeAddressResponse'
+          description: OK
+      security:
+        - bearerAuth: []
+      summary: GetDepositeAddress
+      description: Получение адреса кошелька для пополнения
+  /v0/wallet/{wallet_id}/history:
+    post:
+      tags:
+        - wallet
+      parameters:
+        - examples:
+            wallet_id:
+              value: 0a67f8ae-bd10-4b22-ac13-d86f3517f110
+          name: wallet_id
+          description: uuid кошелька для истории транзакций
+          schema:
+            type: string
+          in: path
+          required: true
+        - examples:
+            last_record_id:
+              value: 335537f0-dd80-41bd-9c33-e1bd2cdedd57
+          name: last_record_id
+          description: |-
+            Для пагинации. uuid последней записи в массиве.
+            При первом вызове - не заполняется
+          schema:
+            type: string
+          in: query
+        - examples:
+            last_created:
+              value: '2025-03-23T16:17:50+03:00'
+          name: last_created
+          description: |-
+            Для пагинации. Дата последней записи в массиве.
+            При первом вызове - не заполняется
+          schema:
+            type: string
+          in: query
+        - examples:
+            page_size:
+              value: '10'
+          name: page_size
+          description: Для пагинации, размер страницы
+          schema:
+            type: string
+          in: query
+        - name: x-kw-rquid
+          description: Rquid - уникальный uuid запроса, генерируется на фронте
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+          in: header
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionHistoryResponse'
+          description: Возвращает историю транзакций с разными типами
+      security:
+        - bearerAuth: []
+      summary: GetTransactionHistory
+      description: Получение истории транзакций по кошельку
+  /v0/wallet/{wallet_id}/withdraw:
+    post:
+      requestBody:
+        description: Тело запроса
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WithdrawRequest'
+        required: true
+      tags:
+        - wallet
+      parameters:
+        - examples:
+            wallet_id:
+              value: 0a67f8ae-bd10-4b22-ac13-d86f3517f110
+          name: wallet_id
+          description: uuid кошелька для снятия средств
+          schema:
+            type: string
+          in: path
+          required: true
+        - name: x-kw-rquid
+          description: Rquid - уникальный uuid запроса, генерируется на фронте
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+          in: header
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Wallet'
+          description: OK
+      security:
+        - bearerAuth: []
+      summary: Withdraw
+      description: Снятие средств с кошелька
+  /v0/merchant/wallet/:
+    get:
+      tags:
+        - merchant_wallet
+      parameters:
+        - name: x-kw-rquid
+          description: Rquid - уникальный uuid запроса, генерируется на фронте
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+          in: header
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetWalletsResponseExtended'
+          description: OK
+      security:
+        - bearerAuth: []
+      summary: GetWallets
+      description: Получение списка кошельков пользователя
+    post:
+      requestBody:
+        description: Тело запроса
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateWallet'
+        required: true
+      tags:
+        - wallet
+      parameters:
+        - name: x-kw-rquid
+          description: rquid
+          schema:
+            type: string
+          in: header
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Wallet'
+          description: OK
+      security:
+        - bearerAuth: []
+      summary: CreateWallet
+      description: Создание кошелька пользователю
+  /v0/merchant/wallet/{wallet_id}/withdraw/:
+    post:
+      requestBody:
+        description: Тело запроса
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WithdrawRequest'
+        required: true
+      tags:
+        - merchant_wallet
+      parameters:
+        - examples:
+            wallet_id:
+              value: 0a67f8ae-bd10-4b22-ac13-d86f3517f110
+          name: wallet_id
+          description: uuid кошелька для снятия средств
+          schema:
+            type: string
+          in: path
+          required: true
+        - name: x-kw-rquid
+          description: Rquid - уникальный uuid запроса, генерируется на фронте
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+          in: header
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Wallet'
+          description: OK
+      security:
+        - bearerAuth: []
+      summary: Withdraw
+      description: Снятие средств с кошелька
+  /v0/merchant/wallet/{wallet_id}/history/:
+    post:
+      tags:
+        - merchant_wallet
+      parameters:
+        - examples:
+            wallet_id:
+              value: 0a67f8ae-bd10-4b22-ac13-d86f3517f110
+          name: wallet_id
+          description: uuid кошелька для истории транзакций
+          schema:
+            type: string
+          in: path
+          required: true
+        - examples:
+            last_record_id:
+              value: 335537f0-dd80-41bd-9c33-e1bd2cdedd57
+          name: last_record_id
+          description: |-
+            Для пагинации. uuid последней записи в массиве.
+            При первом вызове - не заполняется
+          schema:
+            type: string
+          in: query
+        - examples:
+            last_created:
+              value: '2025-03-23T16:17:50+03:00'
+          name: last_created
+          description: |-
+            Для пагинации. Дата последней записи в массиве.
+            При первом вызове - не заполняется
+          schema:
+            type: string
+          in: query
+        - examples:
+            page_size:
+              value: '10'
+          name: page_size
+          description: Для пагинации, размер страницы
+          schema:
+            type: string
+          in: query
+        - name: x-kw-rquid
+          description: Rquid - уникальный uuid запроса, генерируется на фронте
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+          in: header
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionHistoryResponse'
+          description: Возвращает историю транзакций с разными типами
+      security:
+        - bearerAuth: []
+      summary: GetTransactionHistory
+      description: Получение истории транзакций по кошельку
+  /v0/account/:
+    get:
+      tags:
+        - account
+      parameters:
+        - name: x-kw-rquid
+          description: Rquid - уникальный uuid запроса, генерируется на фронте
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+          in: header
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Account'
+          description: OK
+      security:
+        - bearerAuth: []
+      summary: GetAccount
+      description: Получение информации об аккаунте пользователя
+  /v0/wallet/user-history:
+    get:
+      tags:
+        - wallet
+      parameters:
+        - examples:
+            last_created:
+              value: '2025-03-23T16:17:50+03:00'
+          name: last_created
+          description: |-
+            Для пагинации. Дата последней записи в массиве.
+            При первом вызове - не заполняется
+          schema:
+            type: string
+          in: query
+        - examples:
+            last_record_id:
+              value: 335537f0-dd80-41bd-9c33-e1bd2cdedd57
+          name: last_record_id
+          description: |-
+            Для пагинации. uuid последней записи в массиве.
+            При первом вызове - не заполняется
+          schema:
+            type: string
+          in: query
+        - examples:
+            page_size:
+              value: '10'
+          name: page_size
+          description: Для пагинации, размер страницы
+          schema:
+            type: string
+          in: query
+        - name: x-kw-rquid
+          description: Rquid - уникальный uuid запроса, генерируется на фронте
+          schema:
+            type: string
+          in: header
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionHistoryResponse'
+          description: Возвращает историю транзакций с разными типами по всем кошелькам пользователя
+      security:
+        - bearerAuth: []
+      summary: Получение истории транзакций по всем кошелькам пользователя
+  /v0/exrate/list:
+    get:
+      tags:
+        - exchange_rates
+      parameters:
+        - name: x-kw-rquid
+          description: Rquid - уникальный uuid запроса, генерируется на фронте
+          schema:
+            type: string
+            example: 550e8400-e29b-41d4-a716-446655440000
+          in: header
+          required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                maxItems: 100500
+                type: array
+                items:
+                  $ref: '#/components/schemas/Currency'
+          description: OK
+      summary: GetCurrencyList
+      description: Получение списка курсов
+components:
+  schemas:
+    coin.Coin:
+      type: string
+      x-enum-varnames:
+        - ETH
+        - BTC
+        - USDT
+        - TON
+    SessionIDRequest:
+      required:
+        - redirect_uri
+      type: object
+      properties:
+        redirect_uri:
+          type: string
+          example: testapp://test
+    SessionIDResponse:
+      type: object
+      properties:
+        client_id:
+          type: string
+          example: 9f80261c-3455-4942-be48-cd1b2a2d7ba5
+        code_challenge:
+          type: string
+          example: XB8NnQ6olzV3bujaRIGW5kBJVbi6f-JKLOZD6TOTmU4
+        code_challenge_method:
+          type: string
+          example: S256
+        deeplink:
+          type: string
+          example: sberbankid?client_id=9f80261c-3455-4942-be48-cd1b2a2d7ba5&state=kIiyl2YIfrE&scope=openid&code_challenge_method=S256&code_challenge=XB8NnQ6olzV3bujaRIGW5kBJVbi6f-JKLOZD6TOTmU4&redirect_uri=testapp://test&nonce=gz879YXtsha8bjDE59ZtD4oiEe03O8N3IRX62B322AKbyi0t93ItmJyB9j23FQo6
+        nonce:
+          type: string
+          example: gz879YXtsha8bjDE59ZtD4oiEe03O8N3IRX62B322AKbyi0t93ItmJyB9j23FQo6
+        scope:
+          type: string
+          example: openid
+        session_id:
+          type: string
+          example: '964901957800673280'
+        state:
+          type: string
+          example: kIiyl2YIfrE
+    Account:
+      type: object
+      properties:
+        first_name:
+          type: string
+          example: Кристина
+        gender:
+          type: integer
+          example: '2'
+        id:
+          type: string
+          example: e33eaee2-f0e5-48ac-b0e2-63ecae94ae48
+        last_name:
+          type: string
+          example: У.
+    AmountData:
+      type: object
+      properties:
+        amount:
+          type: number
+          example: '10000'
+        currency:
+          description: Курс валюты
+          type: string
+          example: RUR
+    AuthMerchant:
+      type: object
+      properties:
+        access_token:
+          type: string
+        default_currency:
+          type: string
+        default_wallet_id:
+          type: string
+        id:
+          type: string
+        login:
+          type: string
+        name:
+          type: string
+        refresh_token:
+          type: string
+        session_id:
+          type: string
+    AuthTokens:
+      type: object
+      properties:
+        access_token:
+          type: string
+        refresh_token:
+          type: string
+    Balance:
+      type: object
+      properties:
+        id:
+          description: Айди баланса кошелька
+          type: string
+          example: baae9836-ec40-4553-ae3d-d242d2e4da3a
+        type:
+          description: Тип баланса в кошельке
+          type: string
+          example: FREE
+        value:
+          description: Количество монеты на конкретном балансе в минимальных единицах этой валюты
+          type: string
+          example: '100000'
+      example:
+        id: baae9836-ec40-4553-ae3d-d242d2e4da3a
+        value: '0'
+        type: VERIFICATION
+    BuyTicketRequest:
+      required:
+        - amount
+        - buyer_card_id
+        - buyer_user_id
+        - buyer_wallet_id
+        - ticket_id
+        - transaction_key
+      type: object
+      properties:
+        amount:
+          description: Сумма в копейках - то насколько хочет купить валюты покупатель
+          type: integer
+          example: '100000'
+        buyer_card_id:
+          description: uuid карты покупателя
+          type: string
+          example: 6ac0bb7e-4977-4bc7-b994-a2f56d6dc690
+        buyer_user_id:
+          description: uuid юзера покупателя
+          type: string
+          example: 51a47f6d-75fb-492a-b643-7b05606a6b99
+        buyer_wallet_id:
+          description: uuid кошелька
+          type: string
+          example: 21bf3528-bf81-41af-b852-7ff85499cd74
+        ticket_id:
+          description: uuid тикета
+          type: string
+          example: 95120802-0dc5-447e-8fa2-f8739266b3ec
+        transaction_key:
+          description: ключ idempotency
+          type: string
+          example: 6ac0bb7e-4977-4bc7-b994-a2f56d6dc690
+    C2CHistoryTransaction:
+      type: object
+      properties:
+        buyer_user_id:
+          type: string
+        buyer_wallet_id:
+          type: string
+        c2c_status:
+          type: string
+        card_number:
+          type: string
+        card_system_type:
+          type: string
+        coin:
+          $ref: '#/components/schemas/coin.Coin'
+        commission_value:
+          type: integer
+        created:
+          type: string
+        fiat_value:
+          type: integer
+        id:
+          type: string
+        seller_id:
+          type: string
+        seller_wallet_id:
+          type: string
+        state:
+          type: string
+        updated:
+          type: string
+        value:
+          type: string
+    CloseOrderRequest:
+      type: object
+      properties:
+        order_id:
+          type: string
+    CloseTicketRequest:
+      required:
+        - ticket_id
+      type: object
+      properties:
+        ticket_id:
+          description: uuid тикета, который нужно закрыть
+          type: string
+          example: 95120802-0dc5-447e-8fa2-f8739266b3ec
+    ConvertRequest:
+      type: object
+      properties:
+        from:
+          type: string
+        to:
+          type: string
+        value:
+          type: string
+    ConvertResponse:
+      type: object
+      properties:
+        from:
+          type: string
+        original_value:
+          type: string
+        to:
+          type: string
+        value:
+          type: string
+    CreateOrderRequest:
+      type: object
+      properties:
+        coin:
+          type: string
+        currency:
+          type: string
+        merchant_amount:
+          type: number
+        merchant_id:
+          type: string
+        merchant_wallet_id:
+          type: string
+    CreateOrderResponse:
+      type: object
+      properties:
+        order_id:
+          type: string
+    CreateTicketForSaleRequest:
+      required:
+        - card_id
+        - coin
+        - coin_count
+        - coin_price
+        - min_limit
+        - user_id
+        - wallet_id
+      type: object
+      properties:
+        card_id:
+          description: uuid карты на которую пользователь хочет получать деньги от продажи
+          type: string
+          example: c80c235d-bc18-4703-a7ad-d448c0305dae
+        coin:
+          description: Монета
+          type: string
+          example: ETH
+        coin_count:
+          description: Количество монет в минимальных единицах. Для eth это wei и тд.
+          type: string
+          example: '5600000000000000000'
+        coin_price:
+          description: Сумма в копейках за 1 целую монету
+          type: integer
+          example: '100000'
+        min_limit:
+          description: Минимальный лимит на покупку тикета в копейках
+          minimum: 10000
+          type: integer
+          example: '10000'
+        user_id:
+          description: uuid пользователя который создает тикет
+          type: string
+          example: e33eaee2-f0e5-48ac-b0e2-63ecae94ae48
+        wallet_id:
+          description: uuid кошелька с которого берется валюта для тикета
+          type: string
+          example: 8af406fa-950e-448c-8632-7d406db7ae92
+      example:
+        user_id: e33eaee2-f0e5-48ac-b0e2-63ecae94ae48
+        wallet_id: 8af406fa-950e-448c-8632-7d406db7ae92
+        card_id: c80c235d-bc18-4703-a7ad-d448c0305dae
+        coin: ETH
+        coin_price: 100000
+        coin_count: '5600000000000000000'
+        min_limit: 10000
+    CreateWallet:
+      type: object
+      properties:
+        coin:
+          type: string
+          example: ETH
+      example:
+        coin: ETH
+    Currency:
+      type: object
+      properties:
+        code:
+          type: string
+        type:
+          type: string
+    EditMerchantInfo:
+      type: object
+      properties:
+        default_currency:
+          type: string
+        default_wallet_id:
+          type: string
+        id:
+          type: string
+        login:
+          type: string
+        name:
+          type: string
+    ExchangeRate:
+      type: object
+      properties:
+        coin:
+          description: Монета из которой переводят
+          type: string
+          example: ETH
+        fiat_code:
+          description: Фиатный код валюты
+          type: string
+          example: RUB
+        one_coin_price:
+          description: |
+            Стоимость одной целой монеты в фиатной валюте в минимальных единицах валюты
+          type: string
+          example: '3462875100'
+      example:
+        coin: ETH
+        fiat_code: RUB
+        one_coin_price: '3462875100'
+    ExchangeRatePairV2:
+      type: object
+      properties:
+        amount:
+          type: integer
+        from:
+          type: string
+        precision:
+          type: integer
+        to:
+          type: string
+        type:
+          type: string
+        value:
+          type: string
+    ExchangeRateV2:
+      type: object
+      properties:
+        base:
+          type: string
+        rates:
+          uniqueItems: false
+          maxItems: 100500
+          type: array
+          items:
+            $ref: '#/components/schemas/ExchangeRateValueV2'
+    ExchangeRateValueV2:
+      type: object
+      properties:
+        amount:
+          type: integer
+        code:
+          type: string
+        precision:
+          type: integer
+        type:
+          type: string
+        value:
+          type: string
+    GetDepositeAddressResponse:
+      type: object
+      properties:
+        deposite_address:
+          description: Адрес для пополнения кошелька
+          type: string
+          example: '0x200330Bb769e66d011a3a8672C51550256fC2A3D'
+      example:
+        deposite_address: '0x200330Bb769e66d011a3a8672C51550256fC2A3D'
+    GetMerchantOrdersRequest:
+      type: object
+      properties:
+        last_created:
+          type: string
+        last_record_id:
+          type: string
+        merchantID:
+          type: string
+        page_size:
+          type: integer
+    GetMerchantOrdersResponse:
+      type: object
+      properties:
+        is_exist:
+          type: boolean
+        orders:
+          uniqueItems: false
+          maxItems: 100500
+          type: array
+          items:
+            $ref: '#/components/schemas/MerchantOrder'
+    GetOrderInfoRequest:
+      type: object
+      properties:
+        order_id:
+          type: string
+    GetTicketListRequest:
+      required:
+        - coin
+        - page
+        - page_size
+        - ticket_type
+      type: object
+      properties:
+        amount:
+          description: 'Сумма в копейках, на которую нужно получить список тикетов '
+          type: integer
+          example: '1000000'
+        coin:
+          type: string
+          example: ETH
+          x-enum-varnames:
+            - ETH
+            - BTC
+            - USDT
+            - TON
+        page:
+          description: Номер страницы для пагинации
+          type: integer
+          example: '1'
+        page_size:
+          description: Размер страницы для пагинации
+          minimum: 10
+          type: integer
+          example: '10'
+        ticket_type:
+          type: string
+          example: Sale
+      example:
+        ticket_type: Sale
+        coin: ETH
+        amount: 1000000
+        page: 1
+        page_size: 10
+    GetTicketListResponse:
+      type: object
+      properties:
+        tickets:
+          description: Список тикетов
+          uniqueItems: false
+          type: array
+          maxItems: 100500
+          items:
+            $ref: '#/components/schemas/TicketListInfo'
+        total_count:
+          description: Общее количество тикетов под текущие параметры запроса, для высчитывания пагинации
+          type: integer
+          example: '1'
+      example:
+        tickets:
+          - id: 95120802-0dc5-447e-8fa2-f8739266b3ec
+            user_id: e33eaee2-f0e5-48ac-b0e2-63ecae94ae48
+            ticket_type: Sale
+            coin: ETH
+            coin_price: 100000
+            coin_count: 1000000000000000000
+            min_limit: 10000
+            max_limit: 200376420520489660
+            is_active: false
+            created: '2023-11-30T14:27:14.975114Z'
+        total_count: 1
+    GetUserOrdersRequest:
+      type: object
+      properties:
+        last_created:
+          type: string
+        last_record_id:
+          type: string
+        page_size:
+          type: integer
+        userID:
+          type: string
+    GetUserOrdersResponse:
+      type: object
+      properties:
+        is_exist:
+          type: boolean
+        orders:
+          uniqueItems: false
+          type: array
+          maxItems: 100500
+          items:
+            $ref: '#/components/schemas/UserOrder'
+    GetUsersTicketListRequest:
+      required:
+        - is_active
+        - page
+        - page_size
+        - ticket_type
+      type: object
+      properties:
+        is_active:
+          description: |-
+            true - получить свои активные тикеты
+            false - закрытые/неактивные
+          type: boolean
+          example: 'true'
+        page:
+          description: Номер страницы для пагинации
+          type: integer
+          example: '1'
+        page_size:
+          description: Размер страницы для пагинации
+          minimum: 10
+          type: integer
+          example: '10'
+        ticket_type:
+          type: string
+          example: Sale
+      example:
+        ticket_type: Sale
+        is_active: true
+        page: 1
+        page_size: 10
+    GetUsersTicketListResponse:
+      type: object
+      properties:
+        tickets:
+          description: Список тикетов пользователя
+          uniqueItems: false
+          type: array
+          maxItems: 100500
+          items:
+            $ref: '#/components/schemas/Ticket'
+        total_count:
+          description: Общее количество тикетов под текущие параметры запроса, для высчитывания пагинации
+          type: integer
+          example: '1'
+      example:
+        tickets:
+          - id: 95120802-0dc5-447e-8fa2-f8739266b3ec
+            user_id: e33eaee2-f0e5-48ac-b0e2-63ecae94ae48
+            wallet_id: 8af406fa-950e-448c-8632-7d406db7ae92
+            card_id: c80c235d-bc18-4703-a7ad-d448c0305dae
+            ticket_type: Sale
+            coin: ETH
+            coin_price: 100000
+            coin_count: 1000000000000000000
+            min_limit: 10000
+            max_limit: 200376420520389660
+            is_active: false
+            created: '2023-11-30T14:27:14.975114Z'
+            updated: '2023-11-30T15:36:38.899336Z'
+          - id: 7c2aa6b9-ba68-4484-bab1-d55a111fb1f4
+            user_id: e33eaee2-f0e5-48ac-b0e2-63ecae94ae48
+            wallet_id: 8af406fa-950e-448c-8632-7d406db7ae92
+            card_id: c80c235d-bc18-4703-a7ad-d448c0305dae
+            ticket_type: Sale
+            coin: ETH
+            coin_price: 100000
+            coin_count: 1000000000000000000
+            min_limit: 10000
+            max_limit: 200376420520689660
+            is_active: false
+            created: '2023-11-30T14:25:38.2592Z'
+            updated: '2023-11-30T14:25:38.2592Z'
+        total_count: 2
+    GetWalletsResponseExtended:
+      type: object
+      properties:
+        total_balance:
+          description: Массив фиатных валют - общее количество крипты на кошельках в фиатной валюте
+          uniqueItems: false
+          type: array
+          maxItems: 100500
+          items:
+            $ref: '#/components/schemas/WalletTotalBalance'
+        wallets:
+          description: Массив кошельков пользователя
+          uniqueItems: false
+          type: array
+          maxItems: 100500
+          items:
+            $ref: '#/components/schemas/WalletExtended'
+      example:
+        total_balance:
+          - fiat_code: USD
+            total_fiat_value: '0'
+          - fiat_code: RUB
+            total_fiat_value: '0'
+          - fiat_code: TRY
+            total_fiat_value: '0'
+        wallets:
+          - id: 0a67f8ae-bd10-4b22-ac13-d86f3517f110
+            user_id: cb7242b4-105b-4ea6-b9fc-613bfcfca01c
+            coin: ETH
+            status: ACTIVE
+            balances:
+              - id: 2a6dc9f7-29c6-4043-b44d-c055df16fb18
+                value: '0'
+                type: VERIFICATION
+              - id: 0772fa4c-9a2c-43e5-84c8-111a216da85a
+                value: '0'
+                type: FREE
+              - id: 5d603101-eb6e-48ed-9b41-79424e27fdc6
+                value: '0'
+                type: HOLD_ON_TICKET
+              - id: 30e17dda-09b2-42df-8f1c-e771aab02c04
+                value: '0'
+                type: SOLD
+              - id: 0bd550dc-e087-40c0-9721-cf5480a32546
+                value: '0'
+                type: WITHDRAW
+            exchange_rates:
+              - coin: ETH
+                fiat_code: USD
+                one_coin_price: '336830'
+                value: '0'
+              - coin: ETH
+                fiat_code: RUB
+                one_coin_price: '34628751'
+                value: '0'
+              - coin: ETH
+                fiat_code: TRY
+                one_coin_price: '11944244'
+                value: '0'
+    InHistoryTransaction:
+      type: object
+      properties:
+        from:
+          type: string
+        gas:
+          type: integer
+        gas_price:
+          type: string
+        time:
+          type: string
+        value:
+          type: string
+        state:
+          description: |-
+            Может быть пустой для старых транзакций - считать, что она в статусе CONFIRMED
+
+            Возможные статусы:
+
+            WAITING_FOR_CONFIRMATION (транзакция появилась в блокчейне, но ожидаем подтверждения)
+
+            CONFIRMED (транзакция подтверждена)
+          type: string
+        coin:
+          description: |-
+            По этому полю определяется какой с какой валютой была произведена транзакция.
+            Может быть пустой для старых транзакций - считать, что ETH.
+
+            Значения ETH/USDT_ERC20
+    ListCardsRequest:
+      type: object
+      properties:
+        priority_card_only:
+          type: boolean
+          example: 'false'
+    ListCardsResponse:
+      type: object
+      properties:
+        cardList:
+          uniqueItems: false
+          type: array
+          maxItems: 100500
+          items:
+            $ref: '#/components/schemas/Card'
+      example:
+        - id: 36361601-7bd0-4cda-a814-26f35990885d
+          payment_id: 0
+          priority_card: true
+          payment_source_type: DebitCard
+          financial_product_id: '40817810138980045842'
+          mask_number: 220220******3193
+          payment_system_type: MIR
+          card_logo_url: https://cms-res-web.online.sberbank.ru/sberpay/Card/ds_mc_36_mir_logo.png
+          amount_data:
+            amount: -51
+            currency: RUR
+          product_name: МИР Сберкарта
+    LoginRequest:
+      type: object
+      properties:
+        login:
+          type: string
+        password:
+          type: string
+    LogoutRequest:
+      type: object
+      properties:
+        refresh_token:
+          type: string
+    MerchantInfo:
+      type: object
+      properties:
+        default_currency:
+          type: string
+        default_wallet_id:
+          type: string
+        id:
+          type: string
+        login:
+          type: string
+        name:
+          type: string
+    MerchantOrder:
+      type: object
+      properties:
+        amount:
+          type: number
+        coin:
+          type: string
+        coin_count:
+          type: number
+        created:
+          type: string
+        currency:
+          type: string
+        merchant_amount:
+          type: number
+        merchant_wallet_id:
+          type: string
+        order_id:
+          type: string
+        status:
+          type: string
+        updated:
+          type: string
+        user_id:
+          type: string
+    MerchantOrderHistoryTransaction:
+      type: object
+      properties:
+        coin:
+          type: string
+          x-enum-varnames:
+            - ETH
+            - BTC
+            - USDT
+            - TON
+        coin_count:
+          type: string
+        created:
+          type: string
+        currency:
+          type: string
+        id:
+          type: string
+        merchant_amount:
+          type: string
+        merchant_id:
+          type: string
+        merchant_wallet_id:
+          type: string
+        user_id:
+          type: string
+        value:
+          type: string
+    OffChainHistoryTransaction:
+      type: object
+      properties:
+        coin:
+          type: string
+          x-enum-varnames:
+            - ETH
+            - BTC
+            - USDT
+            - TON
+        created:
+          type: string
+        from:
+          type: string
+        to:
+          type: string
+        value:
+          type: string
+    OrderInfo:
+      type: object
+      properties:
+        amount:
+          type: number
+        currency:
+          type: string
+        id:
+          type: string
+        merchant_amount:
+          type: number
+        merchant_id:
+          type: string
+        merchant_name:
+          type: string
+        status:
+          type: string
+    OutHistoryTransaction:
+      type: object
+      properties:
+        gas:
+          type: integer
+        gas_price:
+          type: string
+        state:
+          description: |-
+            Может быть пустой для старых транзакций - считать, что она в статусе CONFIRMED
+
+            Возможные статусы:
+
+            SENT (транзакция отправлена)
+
+            WAITING_FOR_CONFIRMATION
+
+            CONFIRMED
+          type: string
+        time:
+          type: string
+        to:
+          type: string
+        value:
+          type: string
+        withdraw_value:
+          type: string
+        coin:
+          description: |-
+            По этому полю определяется какой с какой валютой была произведена транзакция.
+            Может быть пустой для старых транзакций - считать, что ETH.
+
+            Значения ETH/USDT_ERC20
+          type: string
+        commission:
+          description: 'Коммиссия '
+          type: string
+    PayOrderRequest:
+      type: object
+      properties:
+        order_id:
+          type: string
+        transaction_key:
+          type: string
+        user_card_id:
+          type: string
+        user_id:
+          type: string
+    RefreshToken:
+      type: object
+      properties:
+        refresh_token:
+          type: string
+          example: eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDUwNTQ2ODUsImZpcnN0X25hbWUiOiLQmtGA0LjRgdGC0LjQvdCwIiwiaWF0IjoxNzA0OTY4Mjg1LCJsYXN0X25hbWUiOiLQoy4iLCJuYmYiOjE3MDQ5NjgyODUsInNlc3Npb25faWQiOiI3OTc3NzA4NzE4MTU3MDA0ODAiLCJ1c2VyX2lkIjoiNDI2ZDFiMGQtOTY4MS00NmNjLTk2OTctODAwYzQyN2E0YTQ1In0.C_jeCB-O_9LwJGpL5-geM6i3dfZVnvsYEirp9RFSalRVaaFezyH6MwcWwc2u28Arwc6kVV2T6dda6nGZ_wM0YA
+    RefreshTokenResponse:
+      type: object
+      properties:
+        access_token:
+          description: Обновленный access токен
+          type: string
+          example: eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDQ5NjkwNzMsImZpcnN0X25hbWUiOiLQmtGA0LjRgdGC0LjQvdCwIiwiaWF0IjoxNzA0OTY4NDczLCJsYXN0X25hbWUiOiLQoy4iLCJuYmYiOjE3MDQ5Njg0NzMsInNlc3Npb25faWQiOiI3OTc3NzA4NzE4MTU3MDA0ODAiLCJ1c2VyX2lkIjoiNDI2ZDFiMGQtOTY4MS00NmNjLTk2OTctODAwYzQyN2E0YTQ1In0.opPcdB-eBtj347sAKoThlF_nGR25SSQaJ7Lycg1LGPmSSABYCmMhMUv6sCF7uWXY7T4ii2GZysbDZRUwKGVukw
+        refresh_token:
+          description: Обновленный refresh токен
+          type: string
+          example: eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDUwNTQ4NzMsImZpcnN0X25hbWUiOiLQmtGA0LjRgdGC0LjQvdCwIiwiaWF0IjoxNzA0OTY4NDczLCJsYXN0X25hbWUiOiLQoy4iLCJuYmYiOjE3MDQ5Njg0NzMsInNlc3Npb25faWQiOiI3OTc3NzA4NzE4MTU3MDA0ODAiLCJ1c2VyX2lkIjoiNDI2ZDFiMGQtOTY4MS00NmNjLTk2OTctODAwYzQyN2E0YTQ1In0.ScclM2sMiIVTFfWlbZuA-EqUmLjRpybH7t6kfqN657me7pXJN5LYSmdN7qpcJhtLt3I-d1ECgzOlXj7wy8v_nA
+    RefreshTokensRequest:
+      type: object
+      properties:
+        refresh_token:
+          type: string
+          example: eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MDUwNTQ2ODUsImZpcnN0X25hbWUiOiLQmtGA0LjRgdGC0LjQvdCwIiwiaWF0IjoxNzA0OTY4Mjg1LCJsYXN0X25hbWUiOiLQoy4iLCJuYmYiOjE3MDQ5NjgyODUsInNlc3Npb25faWQiOiI3OTc3NzA4NzE4MTU3MDA0ODAiLCJ1c2VyX2lkIjoiNDI2ZDFiMGQtOTY4MS00NmNjLTk2OTctODAwYzQyN2E0YTQ1In0.C_jeCB-O_9LwJGpL5-geM6i3dfZVnvsYEirp9RFSalRVaaFezyH6MwcWwc2u28Arwc6kVV2T6dda6nGZ_wM0YA
+    RegistrationRequest:
+      type: object
+      properties:
+        default_currency:
+          type: string
+        login:
+          type: string
+        name:
+          type: string
+        password:
+          type: string
+    SetDefaultWalletRequest:
+      type: object
+      properties:
+        user_id:
+          type: string
+          example: 62312bf0-064b-448f-8bc2-f432cf93f15d
+        wallet_id:
+          type: string
+          example: 335537f0-dd80-41bd-9c33-e1bd2cdedd57
+      example:
+        user_id: 62312bf0-064b-448f-8bc2-f432cf93f15d
+        wallet_id: 335537f0-dd80-41bd-9c33-e1bd2cdedd57
+    Ticket:
+      type: object
+      properties:
+        card_id:
+          description: uuid карты
+          type: string
+          example: c80c235d-bc18-4703-a7ad-d448c0305dae
+        coin:
+          type: string
+          example: ETH
+          x-enum-varnames:
+            - ETH
+            - BTC
+            - USDT
+            - TON
+        coin_count:
+          description: Количество монет в минимальных единицах
+          type: number
+          example: '1000000000000000000'
+        coin_price:
+          type: number
+          example: '100000'
+        created:
+          type: string
+          example: '2023-11-30T14:27:14.975114Z'
+        id:
+          type: string
+          example: 95120802-0dc5-447e-8fa2-f8739266b3ec
+        is_active:
+          description: Активен тикет или нет. Если тикет не активен - его нельзя купить, а монета возвращается на кошелек
+          type: boolean
+          example: 'true'
+        max_limit:
+          description: Сумма в копейках за которую можно выкупить весь тикет - верхняя граница
+          type: number
+          example: '10000'
+        min_limit:
+          type: number
+        ticket_type:
+          description: Тип тикета
+          type: string
+          example: Sale
+        updated:
+          type: string
+          example: '2023-11-30T14:27:14.975114Z'
+        user_id:
+          description: uuid пользователя создавшего тикет
+          type: string
+          example: e33eaee2-f0e5-48ac-b0e2-63ecae94ae48
+        wallet_id:
+          description: 'uuid кошелька из которого брали монету для создания тикета '
+          type: string
+          example: 8af406fa-950e-448c-8632-7d406db7ae92
+      example:
+        id: 95120802-0dc5-447e-8fa2-f8739266b3ec
+        user_id: e33eaee2-f0e5-48ac-b0e2-63ecae94ae48
+        wallet_id: 8af406fa-950e-448c-8632-7d406db7ae92
+        card_id: c80c235d-bc18-4703-a7ad-d448c0305dae
+        ticket_type: Sale
+        coin: ETH
+        coin_price: 100000
+        coin_count: 1000000000000000000
+        min_limit: 10000
+        max_limit: 200376420520689660
+        is_active: true
+        created: '2023-11-30T14:27:14.975114Z'
+        updated: '2023-11-30T14:27:14.975114Z'
+    TicketListInfo:
+      type: object
+      properties:
+        coin:
+          type: string
+          example: ETH
+          x-enum-varnames:
+            - ETH
+            - BTC
+            - USDT
+            - TON
+        coin_count:
+          description: Количество монет в минимальных единицах монеты
+          type: number
+          example: '999999999999999998'
+        coin_price:
+          description: Цена за 1 монету
+          type: number
+          example: '100000'
+        created:
+          description: Дата создания тикета
+          type: string
+          example: '2023-11-30T14:27:14.975114Z'
+        id:
+          type: string
+          example: 95120802-0dc5-447e-8fa2-f8739266b3ec
+        max_limit:
+          description: Сумма на которую можно выкупить весь тикет
+          type: number
+          example: '200376420520489664'
+        min_limit:
+          description: Минимальная сумма на которую можно купить монету с тикета
+          type: number
+        ticket_type:
+          type: string
+          example: Sale
+        user_id:
+          description: uuid пользователя который создал тикет
+          type: string
+          example: e33eaee2-f0e5-48ac-b0e2-63ecae94ae48
+      example:
+        id: 95120802-0dc5-447e-8fa2-f8739266b3ec
+        user_id: e33eaee2-f0e5-48ac-b0e2-63ecae94ae48
+        ticket_type: Sale
+        coin: ETH
+        coin_price: 100000
+        coin_count: 1000000000000000000
+        min_limit: 10000
+        max_limit: 200376420520489660
+        is_active: false
+        created: '2023-11-30T14:27:14.975114Z'
+    TransactionHistoryRecord:
+      type: object
+      properties:
+        created:
+          type: string
+        id:
+          type: string
+        transaction:
+          oneOf:
+            - $ref: '#/components/schemas/C2CHistoryTransaction'
+            - $ref: '#/components/schemas/InHistoryTransaction'
+            - $ref: '#/components/schemas/OutHistoryTransaction'
+            - $ref: '#/components/schemas/UserOrderHistoryTransaction'
+            - $ref: '#/components/schemas/MerchantOrderHistoryTransaction'
+            - $ref: '#/components/schemas/OffChainHistoryTransaction'
+          description: Поле, которое может быть транзакцией разного типа
+        type:
+          type: string
+        updated:
+          type: string
+        user_id:
+          type: string
+        wallet_id:
+          type: string
+    TransactionHistoryResponse:
+      type: object
+      properties:
+        is_exist:
+          description: Флаг для пагинации, существуют ли еще записи дальше
+          type: boolean
+          example: 'false'
+        transaction_history_records:
+          description: Массив записи истории
+          uniqueItems: false
+          type: array
+          maxItems: 100500
+          items:
+            $ref: '#/components/schemas/TransactionHistoryRecord'
+      example: |-
+        {
+            "is_exist": false,
+            "transaction_history_records": [
+                {
+                    "id": "a951df4c-6ffb-41d0-a9eb-92963fd9b285",
+                    "type": "OFF_CHAIN_TRANSFER_IN",
+                    "user_id": "62312bf0-064b-448f-8bc2-f432cf93f15d",
+                    "wallet_id": "2e010e94-1e32-40c2-b7b9-8bf09d407be4",
+                    "transaction": {
+                        "from": "0x4261741FA4042EBF2a74Ea5B2Be6C51243b51350",
+                        "to": "0x4BddCBBdF2AB066BdBF6Ac3Fc609f78aDd8ECDdD",
+                        "value": "40000000000000",
+                        "coin": "ETH",
+                        "created": "2025-03-18T16:13:55+03:00"
+                    },
+                    "created": "2025-03-18T16:13:55+03:00",
+                    "updated": "2025-03-18T16:13:55+03:00"
+                },
+                {
+                    "id": "a7282fb8-4bff-4472-b271-c22d7ccd3ef6",
+                    "type": "COIN_SELL",
+                    "user_id": "62312bf0-064b-448f-8bc2-f432cf93f15d",
+                    "wallet_id": "2e010e94-1e32-40c2-b7b9-8bf09d407be4",
+                    "transaction": {
+                        "id": "13c19dfe-86df-47e1-9a69-a4eea350f45e",
+                        "seller_id": "62312bf0-064b-448f-8bc2-f432cf93f15d",
+                        "seller_wallet_id": "2e010e94-1e32-40c2-b7b9-8bf09d407be4",
+                        "buyer_user_id": "d84e2d26-097b-41ef-b6e3-8592b4538c0c",
+                        "buyer_wallet_id": "f15a44e0-bddb-461f-b5c5-bf8328df4f1c",
+                        "fiat_value": 15000,
+                        "commission_value": 0,
+                        "coin": "ETH",
+                        "value": "150000000000000000",
+                        "c2c_status": "0",
+                        "state": "DONE",
+                        "card_number": "2738",
+                        "card_system_type": "MIR",
+                        "created": "2025-03-18T07:24:06Z",
+                        "updated": "2025-03-18T07:24:09Z"
+                    },
+                    "created": "2025-03-18T10:24:09+03:00",
+                    "updated": "2025-03-18T10:24:09+03:00"
+                },
+                {
+                    "id": "21338de9-5389-45ae-90b5-f77d55058170",
+                    "type": "COIN_BUY",
+                    "user_id": "62312bf0-064b-448f-8bc2-f432cf93f15d",
+                    "wallet_id": "2e010e94-1e32-40c2-b7b9-8bf09d407be4",
+                    "transaction": {
+                        "id": "16941fb4-738f-4dbb-9aa7-4fb2ba2c91ec",
+                        "seller_id": "789ff3e4-f1cd-4159-88a2-3cc40c3bf8a9",
+                        "seller_wallet_id": "e16190b5-49a6-4894-995c-7759587534d6",
+                        "buyer_user_id": "62312bf0-064b-448f-8bc2-f432cf93f15d",
+                        "buyer_wallet_id": "2e010e94-1e32-40c2-b7b9-8bf09d407be4",
+                        "fiat_value": 15000,
+                        "commission_value": 0,
+                        "coin": "ETH",
+                        "value": "624479600333056",
+                        "c2c_status": "0",
+                        "state": "DONE",
+                        "card_number": "5552",
+                        "card_system_type": "MASTERCARD",
+                        "created": "2025-03-11T09:03:50Z",
+                        "updated": "2025-03-11T09:03:53Z"
+                    },
+                    "created": "2025-03-11T12:03:53+03:00",
+                    "updated": "2025-03-11T12:03:53+03:00"
+                },
+                {
+                    "id": "b7971868-e439-458f-bcda-5deef2a7c066",
+                    "type": "IN",
+                    "user_id": "62312bf0-064b-448f-8bc2-f432cf93f15d",
+                    "wallet_id": "2e010e94-1e32-40c2-b7b9-8bf09d407be4",
+                    "transaction": {
+                        "time": "2025-03-11T07:43:03Z",
+                        "from": "0xdB46ffA988E90330403CCD25973EFF5358Fbf777",
+                        "value": "10000000000000000000",
+                        "gas": 21000,
+                        "gas_price": "1000000014"
+                        "coin": "ETH",
+                        "state": "CONFIRMED"
+                    },
+                    "created": "2025-03-11T10:43:03+03:00",
+                    "updated": "2025-03-11T10:43:03+03:00"
+                }
+            ]
+        }
+    UserInfo:
+      type: object
+      properties:
+        first_name:
+          type: string
+          example: Кузьма
+        gender:
+          type: integer
+          example: '1'
+        last_name:
+          type: string
+          example: Р.
+        mobile_phone:
+          description: Замаскированные номер телефона
+          type: string
+          example: +7 914 ***-29-01
+      example:
+        last_name: Р.
+        first_name: Кузьма
+        gender: 1
+        mobile_phone: +7 914 ***-29-01
+    UserOrder:
+      type: object
+      properties:
+        amount:
+          type: number
+        created:
+          type: string
+        currency:
+          type: string
+        merchant_amount:
+          type: number
+        merchant_id:
+          type: string
+        merchant_name:
+          type: string
+        order_id:
+          type: string
+        status:
+          type: string
+        updated:
+          type: string
+        user_card_id:
+          type: string
+        user_id:
+          type: string
+    UserOrderHistoryTransaction:
+      type: object
+      properties:
+        created:
+          type: string
+        currency:
+          type: string
+        id:
+          type: string
+        merchant_amount:
+          type: string
+        merchant_id:
+          type: string
+        merchant_name:
+          type: string
+        user_card_id:
+          type: string
+        user_id:
+          type: string
+        value:
+          type: string
+    Wallet:
+      type: object
+      properties:
+        balances:
+          description: Массив балансов кошелька в разных статусах
+          uniqueItems: false
+          type: array
+          maxItems: 100500
+          items:
+            $ref: '#/components/schemas/Balance'
+        coin:
+          description: ETH
+          type: string
+          example: Валюта кошелька
+        id:
+          description: uuid кошелька
+          type: string
+          example: 17bc5103-9534-48dd-979a-6ee1c61dea99
+        status:
+          description: Статус кошелька
+          type: string
+          example: ACTIVE
+        user_id:
+          description: uuid пользователя - владельца кошелька
+          type: string
+          example: aeb5bf51-a1d5-431b-affd-47838c73568c
+      example:
+        id: 17bc5103-9534-48dd-979a-6ee1c61dea99
+        user_id: aeb5bf51-a1d5-431b-affd-47838c73568c
+        coin: ETH
+        status: ACTIVE
+        balances:
+          - id: baae9836-ec40-4553-ae3d-d242d2e4da3a
+            value: '0'
+            type: VERIFICATION
+          - id: d1d36b51-9b3d-43ef-a2f9-df49d804d849
+            value: '0'
+            type: FREE
+          - id: bb30f8a6-58cc-4a2a-810d-4e8b4e070166
+            value: '0'
+            type: HOLD_ON_TICKET
+          - id: 77eacbb6-5a9b-4b59-876c-064fc82af51a
+            value: '0'
+            type: HOLD_ON_PROCESSING
+          - id: 4bdf1380-9140-41e8-bdcb-804d98e46df3
+            value: '0'
+            type: SOLD
+          - id: e1fe0b71-084e-4213-8d0d-8ed9490a1e49
+            value: '0'
+            type: WITHDRAW
+    WalletExchangeRate:
+      type: object
+      properties:
+        coin:
+          type: string
+        fiat_code:
+          type: string
+        one_coin_price:
+          type: string
+        value:
+          type: string
+    WalletExtended:
+      type: object
+      properties:
+        balances:
+          uniqueItems: false
+          type: array
+          maxItems: 100500
+          items:
+            $ref: '#/components/schemas/Balance'
+        coin:
+          type: string
+        exchange_rates:
+          uniqueItems: false
+          type: array
+          maxItems: 100500
+          items:
+            $ref: '#/components/schemas/WalletExchangeRate'
+        id:
+          type: string
+        status:
+          type: string
+        user_id:
+          type: string
+    WalletTotalBalance:
+      type: object
+      properties:
+        fiat_code:
+          description: Текстовый код фиатной валюты
+          type: string
+          example: RUB
+        total_fiat_value:
+          description: Количество фиатной валюты в копейках
+          type: string
+          example: '10000'
+      example:
+        fiat_code: RUB
+        total_fiat_value: '0'
+    WithdrawRequest:
+      type: object
+      properties:
+        to:
+          type: string
+          example: '0x6b17E6418097F396Deb025767F55f05cc6b71155'
+        value:
+          description: Количество монет в минимальных единицах монеты
+          type: string
+          example: '1000000000000000'
+      example:
+        to: '0x6b17E6418097F396Deb025767F55f05cc6b71155'
+        value: '1000000000000000'
+    SDKAuthRequest:
+      required:
+        - auth_code
+        - device_info
+        - redirect_uri
+        - session_id
+        - state
+      type: object
+      properties:
+        auth_code:
+          description: |-
+            Получаем из запроса SessionAuth:
+            https://ift-csa.testonline.sberbank.ru:4457/CSAMAPI/logintoexternalsystem.do
+          type: string
+          example: 6B81120F-F9B5-44EE-AC9D-9475672B5901
+        device_info:
+          type: string
+          example: '{  \"RdpConnectionDuration\" : 0,  \"AgentAppInfo\" : \"SPaySdkExample 1.1 ARM64E\",  \"RdpConnection\" : \"0\",  \"TimeZoneDSTOffset\" : \"60\",  \"MultitaskingSupported\" : true,  \"ShareScreen\" : false,  \"DeviceSystemVersion\" : \"16.0.2\",  \"LocalIPv4\" : \"10.8.32.63\",  \"DeviceSystemName\" : \"iOS\",  \"AppKey\" : \"FE3264A25BAF4EE6AA8CFDB641B46E7D\",  \"TIMESTAMP\" : \"2023-06-22T17:56:57Z\",  \"HardwareID\" : \"D9354C91-F85C-4B6B-B15D-432DB6E61DBA\",  \"VpnConnection\" : false,  \"AgentSignalTypeCellular\" : \"unknown\",  \"PhoneCallDuration\" : -1,  \"DeviceModel\" : \"iPhone14,8\",  \"Emulator\" : 0,  \"AccessibilityServices\" : {    \"VoiceOver\" : false  },  \"AgentBrand\" : \"Apple\",  \"DnsIP\" : \"10.41.24.21 10.63.182.30 10.41.24.22 \",  \"TimeZone\" : \"180\",  \"OtherAudioPlaying\" : true,  \"MCC\" : \"-1\",  \"AgentSignalStrengthCellular\" : \"-1\",  \"OSFontsHash\" : \"59a86c5eb70a6cb1653513ef8e87b29d\",  \"LocalIPv6\" : \"fe80::d7:8334:f540:5cfb\",  \"PhoneCallDirection\" : 0,  \"SDK_VERSION\" : \"1.4.12\",  \"Compromised\" : 0,  \"ScreenColorDepth\" : \"16.7 million (24-bit)\",  \"AgentConnectionType\" : \"Wifi\",  \"OS_ID\" : \"DCB62FA0-6AEC-4260-AD84-A8C4998E1421\",  \"AgentBootTime\" : \"116114.132104\",  \"PhoneCallState\" : 0,  \"Languages\" : \"ru-RU\",  \"ScreenSize\" : \"428 x 926\",  \"WiFiNetworksData\" : {  },  \"DeviceName\" : \"iPhone\",  \"ScreenshotCounter\" : 0,  \"GeoLocationInfo\" : [    {      \"Status\" : \"0\",      \"Latitude\" : \"49.77017212\",      \"AltitudeAccuracy\" : \"12.24744987\",      \"Timestamp\" : \"1687445774827\",      \"Altitude\" : \"164.38000488\",      \"Longitude\" : \"30.1350906\",      \"HorizontalAccuracy\" : \"168.68340358\"    }  ],  \"MNC\" : \"-1\",  \"OSFontsNumber\" : \"286\",  \"AuthenticationInfo\" : {    \"BioAuthFirstMethod\" : 2,    \"IsDeviceUnlocked\" : true,    \"HoursSinceAuthDbUpdateDetected\" : 50  },  \"PhoneCallType\" : \"unknown\",  \"LocationHash\" : \"797ec5d580462221b5935bfdfec114eb17c94351654a7a49b790ab0aac50e1f0\"}'
+        redirect_uri:
+          type: string
+          example: testapp://test
+        session_id:
+          description: Получаем из нашего запроса SessionID
+          type: string
+          example: '965203838645149696'
+        state:
+          description: Получаем из нашего запроса SessionID
+          type: string
+          example: 9xs52pPcE5g
+    SDKAuthResponse:
+      type: object
+      properties:
+        access_token:
+          description: Access Jwt токен
+          type: string
+          example: eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDQ4ODkxOTYsImZpcnN0X25hbWUiOiLQmtGD0LfRjNC80LAiLCJpYXQiOjE3NDQ4ODczOTYsImxhc3RfbmFtZSI6ItCgLiIsIm5iZiI6MTc0NDg4NzM5Niwicm9sZSI6InVzZXIiLCJzZXNzaW9uX2lkIjoiOTY1MjAzODM4NjQ1MTQ5Njk2IiwidXNlcl9pZCI6IjYyMzEyYmYwLTA2NGItNDQ4Zi04YmMyLWY0MzJjZjkzZjE1ZCJ9.AEgXQukmM0AIgIIrfQw0pLBGXY9EL62keQhNH6uRw9kLbj-ArAVpekYvk51a0uBxnvy4H8JZtuRRX7hOB9o0Zg
+        is_otp_need:
+          type: boolean
+          example: 'false'
+        refresh_token:
+          description: Refresh Jwt токен
+          type: string
+          example: eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NDQ5NzM3OTYsImZpcnN0X25hbWUiOiLQmtGD0LfRjNC80LAiLCJpYXQiOjE3NDQ4ODczOTYsImxhc3RfbmFtZSI6ItCgLiIsIm5iZiI6MTc0NDg4NzM5Niwicm9sZSI6InVzZXIiLCJzZXNzaW9uX2lkIjoiOTY1MjAzODM4NjQ1MTQ5Njk2IiwidXNlcl9pZCI6IjYyMzEyYmYwLTA2NGItNDQ4Zi04YmMyLWY0MzJjZjkzZjE1ZCJ9.VrIxILr9Q3J7vnIkoSK4wmNW_IzuYD_nEMerN_nHlCztoExv2hqA3chPIycZqjHq_GpVEM1qpXx_lZovdz1lzg
+        session_id:
+          description: Сессия sberID
+          type: string
+          example: '965203838645149696'
+        sub:
+          type: string
+          example: 665a7c2cebfab34c68ac7b09726191b570183d705e2e2cff1527c490b6d639db8c42ce2c4d2d6cb4
+        user_info:
+          $ref: '#/components/schemas/UserInfo'
+    Card:
+      title: Root Type for Card
+      description: 'Карта '
+      required:
+        - amount_data
+      type: object
+      properties:
+        id:
+          type: string
+          example: 36361601-7bd0-4cda-a814-26f35990885d
+        payment_id:
+          format: int32
+          type: integer
+          example: '0'
+        priority_card:
+          type: boolean
+          example: 'true'
+        payment_source_type:
+          description: Тип карты, дебетовая/кредитная
+          type: string
+          example: DebitCard
+        financial_product_id:
+          type: string
+          example: '40817810138980045842'
+        mask_number:
+          description: Маскированный номер карты
+          type: string
+          example: 220220******3193
+        payment_system_type:
+          description: Платежная система MIR,VISA...
+          type: string
+          example: MIR
+        card_logo_url:
+          description: 'Ссылка на логотип карты '
+          type: string
+          example: https://cms-res-web.online.sberbank.ru/sberpay/Card/ds_mc_36_mir_logo.png
+        amount_data:
+          $ref: '#/components/schemas/AmountData'
+        product_name:
+          type: string
+          example: МИР Сберкарта
+      example:
+        id: 36361601-7bd0-4cda-a814-26f35990885d
+        payment_id: 0
+        priority_card: true
+        payment_source_type: DebitCard
+        financial_product_id: '40817810138980045842'
+        mask_number: 220220******3193
+        payment_system_type: MIR
+        card_logo_url: https://cms-res-web.online.sberbank.ru/sberpay/Card/ds_mc_36_mir_logo.png
+        amount_data:
+          amount: -51
+          currency: RUR
+        product_name: МИР Сберкарта
+  securitySchemes:
+    bearerAuth:
+      scheme: bearer
+      bearerFormat: JWT
+      type: http
+      description: Введите JWT токен в формате 'Bearer <токен>'
+tags:
+  - name: configuration
+    description: Ручки для общей конфигурации приложения
+  - name: auth
+    description: Ручки для авторизации пользователя
+  - name: account
+    description: Ручки связанные с аккаунтом пользователя
+  - name: wallet
+    description: Ручки связанные с кошельками пользователя
+  - name: tickets
+    description: Ручки для работы с тикетами
+  - name: orders
+    description: Ручки для работы с заказами
+  - name: exchange_rates
+    description: Ручки связанные с курсами валют
+  - name: merchant_account
+    description: Ручки связанные с аккаунтом мерчанта
+  - name: merchant_auth
+    description: Ручки связанные с авторизацией мерчанта
+  - name: merchant_wallet
+    description: Ручки связанные с кошельком мерчанта
+  - name: merchant_order
+    description: Ручки связанные с заказами мерчанта
+externalDocs:
+  description: ''
+  url: ''
+
+# Powered by APIStudio

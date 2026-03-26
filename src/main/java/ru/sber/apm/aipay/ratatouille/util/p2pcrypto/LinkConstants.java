@@ -10,8 +10,11 @@ public class LinkConstants {
     public static final String API_PREFIX = "/" + API_VERSION;
 
     // Endpoints
+    public static final String ENDPOINT_WALLETS = API_PREFIX + "/wallet/";
     public static final String ENDPOINT_DEPOSITE_ADDRESS = API_PREFIX + "/wallet/{walletId}/deposite-address";
     public static final String ENDPOINT_WITHDRAW = API_PREFIX + "/wallet/{walletId}/withdraw";
+    public static final String ENDPOINT_WALLET_HISTORY = API_PREFIX + "/wallet/{walletId}/history";
+    public static final String ENDPOINT_USER_HISTORY = API_PREFIX + "/wallet/user-history";
 
     // Header names
     public static final String HEADER_RQUID = "x-kw-rquid"; // TODO точно такой naming? Или просто RqUID?

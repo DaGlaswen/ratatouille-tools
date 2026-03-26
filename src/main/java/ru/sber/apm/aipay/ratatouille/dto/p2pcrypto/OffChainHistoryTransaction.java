@@ -1,0 +1,49 @@
+package ru.sber.apm.aipay.ratatouille.dto.p2pcrypto;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import jakarta.validation.constraints.NotBlank;
+import lombok.*;
+import lombok.experimental.Accessors;
+
+/**
+ * Off-chain транзакция (перевод между кошельками внутри системы)
+ */
+@Getter
+@Setter
+@Accessors(chain = true)
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class OffChainHistoryTransaction {
+
+    /**
+     * Валюта монеты
+     */
+    @NotBlank
+    private String coin;
+
+    /**
+     * Дата создания
+     */
+    @NotBlank
+    private String created;
+
+    /**
+     * Адрес отправителя
+     */
+    @NotBlank
+    private String from;
+
+    /**
+     * Адрес получателя
+     */
+    @NotBlank
+    private String to;
+
+    /**
+     * Сумма в минимальных единицах
+     */
+    @NotBlank
+    private String value;
+}
