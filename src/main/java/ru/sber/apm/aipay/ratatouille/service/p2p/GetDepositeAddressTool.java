@@ -44,6 +44,8 @@ public class GetDepositeAddressTool {
                             .build(parsedWalletId.toString()))
                     .header(LinkConstants.HEADER_RQUID, headers.getRquid())
                     .header(LinkConstants.AGENT_USER_ID, headers.getAgentUserID())
+                    .cookie("X-SP-D-M", "M")
+                    .cookie("X-Geo-Sticky", "DS")
                     .retrieve()
                     .body(GetDepositeAddressResponse.class);
 
