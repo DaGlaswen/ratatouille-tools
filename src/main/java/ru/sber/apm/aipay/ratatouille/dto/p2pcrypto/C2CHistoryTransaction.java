@@ -1,9 +1,12 @@
 package ru.sber.apm.aipay.ratatouille.dto.p2pcrypto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 import lombok.experimental.Accessors;
+import tools.jackson.databind.PropertyNamingStrategy;
+import tools.jackson.databind.annotation.JsonNaming;
 
 /**
  * C2C транзакция (покупка/продажа между пользователями)
@@ -15,6 +18,7 @@ import lombok.experimental.Accessors;
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
+//@JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class C2CHistoryTransaction {
 
     /**
