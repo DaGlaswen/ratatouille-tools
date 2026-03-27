@@ -46,9 +46,8 @@ public class GetTransactionHistoryTool {
         try {
             TransactionHistoryResponse response = restClient.post()
                     .uri(uriBuilder -> {
-                        uriBuilder.path(LinkConstants.ENDPOINT_WALLET_HISTORY)
-                                .build(parsedWalletId.toString());
-                        
+                        uriBuilder.path(LinkConstants.ENDPOINT_WALLET_HISTORY);
+
                         if (lastRecordId != null && !lastRecordId.isBlank()) {
                             uriBuilder.queryParam("last_record_id", lastRecordId);
                         }
@@ -58,7 +57,8 @@ public class GetTransactionHistoryTool {
                         if (pageSize != null && !pageSize.isBlank()) {
                             uriBuilder.queryParam("page_size", pageSize);
                         }
-                        return uriBuilder.build();
+
+                        return uriBuilder.build(parsedWalletId.toString());
                     })
                     .header(LinkConstants.HEADER_RQUID, headers.getRquid())
                     .header(LinkConstants.AGENT_USER_ID, headers.getAgentUserID())
