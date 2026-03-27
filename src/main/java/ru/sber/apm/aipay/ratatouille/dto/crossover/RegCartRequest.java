@@ -1,5 +1,6 @@
 package ru.sber.apm.aipay.ratatouille.dto.crossover;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -15,6 +16,7 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class RegCartRequest {
 
     @NotNull
@@ -44,6 +46,7 @@ public class RegCartRequest {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class CartItem {
         @NotNull
         private String productId;

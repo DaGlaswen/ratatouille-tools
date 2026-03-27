@@ -1,5 +1,6 @@
 package ru.sber.apm.aipay.ratatouille.dto.crossover;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import lombok.*;
@@ -11,6 +12,7 @@ import lombok.experimental.Accessors;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Order {
 
     private String orderId;
@@ -40,6 +42,7 @@ public class Order {
     @Builder
     @NoArgsConstructor
     @AllArgsConstructor
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public static class MerchantInfo {
         private String pointId;
         private String name;
