@@ -42,7 +42,7 @@ public class GetSessionTool {
 
             var headers = CrossoverHeaders.builder()
                     .authorization(crossoverApiProperties.getApiKey())
-                    .timestamp(Utils.getCurrentTimestamp())
+                    .timestamp("2026-03-27T16:22:00+00:00") // TODO подставлять реальный
                     .rqUID(rqUID != null ? rqUID : UUID.randomUUID().toString())
                     .build();
 
@@ -52,7 +52,7 @@ public class GetSessionTool {
                     .scenario("multiQR")
                     .build();
 
-            logger.info("Запрос на создание сессии для платежа: rqUid={}", rqUID);
+            logger.info("Запрос на создание сессии для платежа: rqUid={}", headers.getRqUID());
 
             GetSessionResponse response = restClient.post()
                     .uri(CrossoverConstants.ENDPOINT_SESSION_ID_WEB)

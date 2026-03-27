@@ -3,6 +3,8 @@ package ru.sber.apm.aipay.ratatouille.util;
 import lombok.experimental.UtilityClass;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
 @UtilityClass
@@ -13,5 +15,12 @@ public class Utils {
 
     public static String getCurrentTimestamp() {
         return LocalDateTime.now().format(formatter);
+    }
+
+    private static final DateTimeFormatter formatterWithTimezone =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX");
+
+    public static String getCurrentTimestampZ() {
+        return OffsetDateTime.now(ZoneOffset.UTC).format(formatter);
     }
 }
