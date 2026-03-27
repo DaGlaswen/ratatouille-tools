@@ -20,11 +20,19 @@ public class CrossoverConstants {
     public static final String ENDPOINT_ORDER_LIST = API_PREFIX + "/order/list";
     public static final String ENDPOINT_ORDER_DETAIL = API_PREFIX + "/order/{orderId}";
 
+    public static final String ENDPOINT_SESSION_ID_WEB = "/sdk-gateway/v1/sessionIdWeb";
+
     // Header names
     public static final String HEADER_AUTHORIZATION = "Authorization";
     public static final String HEADER_TIMESTAMP = "timestamp";
     public static final String HEADER_RQ_UID = "rqUID";
     public static final String HEADER_LOCAL_SESSION_ID = "localSessionId";
+
+    public static final String HEADER_X_B3_SPAN_ID = "x-b3-spanid";
+    public static final String HEADER_X_SYSTEM_ID = "X-System-Id";
+    public static final String HEADER_X_B3_TRACE_ID = "x-b3-traceid";
+    public static final String HEADER_APP_NAME = "appName";
+    public static final String HEADER_USER_TM = "UserTm";
 
     // Query param names
     public static final String PARAM_EXT_BRANCH_ID = "extBranchId";
