@@ -111,7 +111,7 @@ jobs:
             
             # Wait for application to start
             echo "⏳ Waiting for application to start..."
-            sleep 60
+            sleep 20
             
             # Health check with retry logic
             MAX_RETRIES=6
