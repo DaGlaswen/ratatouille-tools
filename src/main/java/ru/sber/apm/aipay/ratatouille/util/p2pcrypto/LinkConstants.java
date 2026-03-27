@@ -17,7 +17,7 @@ public class LinkConstants {
     public static final String ENDPOINT_USER_HISTORY = API_PREFIX + "/wallet/user-history";
 
     // Header names
-    public static final String HEADER_RQUID = "x-kw-rquid"; // TODO точно такой naming? Или просто RqUID?
+    public static final String HEADER_RQUID = "RqUID"; // TODO точно такой naming? Или просто RqUID?
     public static final String AGENT_USER_ID = "AgentUserID";
 
     // Coin types
