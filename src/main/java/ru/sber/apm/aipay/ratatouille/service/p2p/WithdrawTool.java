@@ -27,7 +27,7 @@ public class WithdrawTool {
         this.restClient = linkRestClient;
     }
 
-    @McpTool(description = "Вывести криптовалюту с кошелька на внешний адрес")
+    @McpTool(description = "Перевести off-chain или вывести криптовалюту с кошелька на внешний адрес (on-chain)")
     public Wallet withdraw(
             @McpToolParam(description = "UUID кошелька для снятия средств (обязательный)") String walletId,
             @McpToolParam(description = "UUID пользователя") String agentUserID,
