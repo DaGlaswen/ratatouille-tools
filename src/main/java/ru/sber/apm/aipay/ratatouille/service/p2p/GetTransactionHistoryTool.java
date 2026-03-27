@@ -44,7 +44,7 @@ public class GetTransactionHistoryTool {
                 parsedWalletId, lastRecordId, headers.getRquid());
 
         try {
-            TransactionHistoryResponse response = restClient.post()
+            TransactionHistoryResponse response = restClient.get()
                     .uri(uriBuilder -> {
                         uriBuilder.path(LinkConstants.ENDPOINT_WALLET_HISTORY);
 
