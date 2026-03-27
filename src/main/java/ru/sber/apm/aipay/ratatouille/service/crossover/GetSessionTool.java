@@ -27,6 +27,7 @@ public class GetSessionTool {
     private final RestClient restClient;
     private final CrossoverApiProperties crossoverApiProperties;
 
+
     public GetSessionTool(RestClient crossoverRestClient, CrossoverApiProperties crossoverApiProperties) {
         this.restClient = crossoverRestClient;
         this.crossoverApiProperties = crossoverApiProperties;
