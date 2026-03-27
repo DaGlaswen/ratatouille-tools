@@ -49,6 +49,7 @@ public class GetDepositeAddressTool {
                     .retrieve()
                     .body(GetDepositeAddressResponse.class);
 
+            logger.debug("Тело ответа {}", response);
             logger.info("Ответ адреса депозита: walletId={}, address={}",
                     parsedWalletId,
                     response != null ? maskAddress(response.getDepositeAddress()) : null);

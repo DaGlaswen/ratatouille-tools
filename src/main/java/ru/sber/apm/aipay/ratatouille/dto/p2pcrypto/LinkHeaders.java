@@ -30,7 +30,7 @@ public class LinkHeaders {
     public static LinkHeaders of(String agentUserID, String rquid) {
         return LinkHeaders.builder()
                 .agentUserID(agentUserID)
-                .rquid(rquid)
+                .rquid(rquid != null ? rquid : java.util.UUID.randomUUID().toString())
                 .build();
     }
 
