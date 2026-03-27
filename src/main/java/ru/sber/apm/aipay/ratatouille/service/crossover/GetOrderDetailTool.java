@@ -13,6 +13,7 @@ import ru.sber.apm.aipay.ratatouille.config.crossover.CrossoverApiProperties;
 import ru.sber.apm.aipay.ratatouille.dto.crossover.CrossoverHeaders;
 import ru.sber.apm.aipay.ratatouille.dto.crossover.OrderDetailResponse;
 import ru.sber.apm.aipay.ratatouille.exception.crossover.CrossoverApiException;
+import ru.sber.apm.aipay.ratatouille.util.Utils;
 import ru.sber.apm.aipay.ratatouille.util.crossover.CrossoverConstants;
 import ru.sber.apm.aipay.ratatouille.util.crossover.CrossoverValidationUtil;
 
@@ -47,7 +48,7 @@ public class GetOrderDetailTool {
 
             var headers = CrossoverHeaders.builder()
                     .authorization(crossoverApiProperties.getApiKey())
-                    .timestamp(java.time.Instant.now().toString())
+                    .timestamp(Utils.getCurrentTimestamp())
                     .rqUID(rqUID != null ? rqUID : java.util.UUID.randomUUID().toString())
                     .localSessionId(localSessionId)
                     .build();
