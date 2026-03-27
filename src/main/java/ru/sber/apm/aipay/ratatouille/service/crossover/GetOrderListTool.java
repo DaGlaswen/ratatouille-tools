@@ -44,7 +44,6 @@ public class GetOrderListTool {
             @McpToolParam(description = "ID сессии на фронтенде (опционально)", required = false) String localSessionId) {
 
         try {
-            var parsedSubId = CrossoverValidationUtil.requireValidUuid(subId, "subId");
             UUID parsedExtBranchId = extBranchId != null ? CrossoverValidationUtil.parseUuidSafe(extBranchId) : null;
 
             // Валидация пагинации
@@ -60,12 +59,12 @@ public class GetOrderListTool {
                     .build();
 
             logger.info("Запрос истории заказов: subId={}, extBranchId={}, page={}, limit={}",
-                    parsedSubId, parsedExtBranchId, page, limit);
+                    subId, parsedExtBranchId, page, limit);
 
             OrderListResponse response = restClient.get()
                     .uri(uriBuilder -> {
                         uriBuilder.path(CrossoverConstants.ENDPOINT_ORDER_LIST)
-                                .queryParam(CrossoverConstants.PARAM_SUB_ID, parsedSubId)
+                                .queryParam(CrossoverConstants.PARAM_SUB_ID, subId)
                                 .queryParam(CrossoverConstants.PARAM_PAGE, page != null ? page : CrossoverConstants.DEFAULT_PAGE)
                                 .queryParam(CrossoverConstants.PARAM_LIMIT, limit != null ? limit : CrossoverConstants.DEFAULT_LIMIT);
 

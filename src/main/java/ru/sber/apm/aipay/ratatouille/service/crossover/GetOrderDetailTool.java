@@ -43,7 +43,6 @@ public class GetOrderDetailTool {
             @McpToolParam(description = "ID сессии на фронтенде (опционально)", required = false) String localSessionId) {
 
         try {
-            var parsedSubId = CrossoverValidationUtil.requireValidUuid(subId, "subId");
             UUID parsedExtBranchId = extBranchId != null ? CrossoverValidationUtil.parseUuidSafe(extBranchId) : null;
 
             var headers = CrossoverHeaders.builder()
@@ -54,12 +53,12 @@ public class GetOrderDetailTool {
                     .build();
 
             logger.info("Запрос детали заказа: orderId={}, subId={}, extBranchId={}",
-                    orderId, parsedSubId, parsedExtBranchId);
+                    orderId, subId, parsedExtBranchId);
 
             OrderDetailResponse response = restClient.get()
                     .uri(uriBuilder -> {
                         var builder = uriBuilder.path(CrossoverConstants.ENDPOINT_ORDER_DETAIL)
-                                .queryParam(CrossoverConstants.PARAM_SUB_ID, parsedSubId);
+                                .queryParam(CrossoverConstants.PARAM_SUB_ID, subId);
 
                         if (parsedExtBranchId != null) {
                             builder.queryParam(CrossoverConstants.PARAM_EXT_BRANCH_ID, parsedExtBranchId);
