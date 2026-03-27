@@ -42,7 +42,7 @@ public class GetSessionTool {
 
             var headers = CrossoverHeaders.builder()
                     .authorization(crossoverApiProperties.getApiKey())
-                    .timestamp("2026-03-27T16:22:00+00:00") // TODO подставлять реальный
+                    .timestamp(Utils.getCurrentTimestampZ())
                     .rqUID(rqUID != null ? rqUID : UUID.randomUUID().toString())
                     .build();
 
