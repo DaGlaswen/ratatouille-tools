@@ -3,6 +3,8 @@ package ru.sber.apm.aipay.ratatouille.dto.p2pcrypto;
 import lombok.*;
 import lombok.experimental.Accessors;
 import jakarta.validation.constraints.NotBlank;
+import tools.jackson.databind.PropertyNamingStrategies;
+import tools.jackson.databind.annotation.JsonNaming;
 
 /**
  * Общие заголовки для запросов к LINK API
@@ -13,6 +15,7 @@ import jakarta.validation.constraints.NotBlank;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonNaming(PropertyNamingStrategies.SnakeCaseStrategy.class)
 public class LinkHeaders {
 
     /**

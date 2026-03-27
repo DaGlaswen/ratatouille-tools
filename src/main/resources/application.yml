@@ -42,6 +42,8 @@ link:
     timeout-ms: 30000
 
 spring:
+  jackson:
+    property-naming-strategy: SNAKE_CASE
   ai:
     mcp:
       server:
