@@ -53,7 +53,7 @@ public class GetSessionTool {
                     .scenario("multiQR")
                     .build();
 
-            logger.info("Запрос на создание сессии для платежа: rqUid={}", headers.getRqUID());
+            logger.info("Запрос на создание сессии для платежа: rqUid={}, totalAmount={}, qrData={}", headers.getRqUID(), totalAmount, qrData);
 
             GetSessionResponse response = restClient.post()
                     .uri(CrossoverConstants.ENDPOINT_SESSION_ID_WEB)
