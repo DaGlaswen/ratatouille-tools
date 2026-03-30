@@ -1,0 +1,12 @@
+{
+  "content": "…",
+  "ui": [],
+  "actions": [],
+  "paymentIntents": [
+    {
+      "provider": "crossover",
+      "orderId": "order_123",
+      "sessionId": "sess_abc"
+    }
+  ]
+}
