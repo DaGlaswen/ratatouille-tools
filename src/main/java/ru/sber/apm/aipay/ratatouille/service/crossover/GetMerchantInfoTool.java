@@ -65,10 +65,11 @@ public class GetMerchantInfoTool {
             if (response == null) {
                 throw CrossoverApiException.notFound("Партнер", extBranchId);
             }
-            logger.info("Ответ от партнера: pointId={}, name={}, status.active={}, rqUID={}",
+            logger.info("Ответ от партнера: pointId={}, name={}, status.active={}, qrData={}, rqUID={}",
                     response.getPointId(),
                     response.getName(),
                     response.getStatus() != null ? response.getStatus().getActive() : null,
+                    response.getQrData(),
                     rqUID);
 
             return response;

@@ -40,7 +40,7 @@ public class GetSessionTool {
             @McpToolParam(description = "qrData полученный из метода getMerchantInfo") String qrData) {
 
         rqUID = rqUID != null ? rqUID : UUID.randomUUID().toString();
-        String traceId = UUID.randomUUID().toString();
+        String traceId = UUID.randomUUID().toString().replace("-", "");
 
         try {
 
