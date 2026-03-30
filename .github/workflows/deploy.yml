@@ -76,6 +76,7 @@ jobs:
           port: ${{ secrets.SSH_PORT || 22 }}
           source: "target/*.jar"
           target: "/home/user1/ratatouille-debug/"
+          debug: true
 
 
       - name: Deploy and start application

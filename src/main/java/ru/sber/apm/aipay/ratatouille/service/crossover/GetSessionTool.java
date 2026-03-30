@@ -46,7 +46,7 @@ public class GetSessionTool {
 
             var headers = CrossoverHeaders.builder()
                     .authorization(crossoverApiProperties.getApiKey())
-                    .timestamp(Utils.getCurrentTimestampZ())
+                    .timestamp("2026-03-27T16:22:00+00:00")
                     .rqUID(rqUID)
                     .build();
 
@@ -65,7 +65,7 @@ public class GetSessionTool {
                     .header(CrossoverConstants.HEADER_RQ_UID, headers.getRqUID())
                     .header(CrossoverConstants.HEADER_X_B3_SPAN_ID, "72967fd0f6684c41") // TODO нормально заполнять
                     .header(CrossoverConstants.HEADER_X_SYSTEM_ID, "SBERPAY_SDK")
-                    .header(CrossoverConstants.HEADER_X_B3_TRACE_ID, traceId)
+                    .header(CrossoverConstants.HEADER_X_B3_TRACE_ID, "2d6b0c84e80f4163b958d1af333aca2f")
                     .header(CrossoverConstants.HEADER_APP_NAME, "Bundle")
                     .body(request)
                     .retrieve()
