@@ -30,9 +30,11 @@ public class GetWalletsTool {
             @McpToolParam(description = "UUID пользователя") String agentUserID,
             @McpToolParam(description = "Уникальный идентификатор запроса (по умолчанию генерируется автоматически)", required = false) String rquid) {
 
-        var headers = LinkHeaders.of(agentUserID, rquid);
+        String effectiveRquid = rquid != null ? rquid : java.util.UUID.randomUUID().toString();
 
-        logger.info("Запрос списка кошельков: rquid={}", headers.getRquid());
+        var headers = LinkHeaders.of(agentUserID, effectiveRquid);
+
+        logger.info("Запрос списка кошельков: rquid={}", effectiveRquid);
 
         try {
             GetWalletsResponseExtended response = restClient.get()
@@ -44,8 +46,9 @@ public class GetWalletsTool {
                     .retrieve()
                     .body(GetWalletsResponseExtended.class);
 
-            logger.info("Получен список кошельков: walletCount={}",
-                    response != null && response.getWallets() != null ? response.getWallets().size() : 0);
+            logger.info("Получен список кошельков: walletCount={}, rquid={}",
+                    response != null && response.getWallets() != null ? response.getWallets().size() : 0,
+                    effectiveRquid);
 
             return response;
 
@@ -56,8 +59,8 @@ public class GetWalletsTool {
             HttpStatusCode statusCode = e.getStatusCode();
             String responseBody = e.getResponseBodyAsString();
 
-            logger.error("HTTP ошибка от LINK API при получении кошельков: status={}, body={}",
-                    statusCode, truncate(responseBody));
+            logger.error("HTTP ошибка от LINK API при получении кошельков: status={}, body={}, rquid={}",
+                    statusCode, truncate(responseBody), effectiveRquid);
 
             switch (statusCode.value()) {
                 case 400 -> throw LinkApiException.badRequest("Ошибка валидации: " + responseBody);
@@ -75,7 +78,7 @@ public class GetWalletsTool {
 
         } catch (ResourceAccessException e) {
             String causeMessage = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
-            logger.error("Ошибка соединения с LINK API: {}", causeMessage, e);
+            logger.error("Ошибка соединения с LINK API: {}, rquid={}", causeMessage, effectiveRquid, e);
 
             if (causeMessage != null && causeMessage.toLowerCase().contains("timeout")) {
                 throw LinkApiException.timeoutError("Таймаут соединения с LINK API");
@@ -87,11 +90,11 @@ public class GetWalletsTool {
             throw LinkApiException.connectionError("Ошибка соединения с LINK API: " + causeMessage, e);
 
         } catch (IllegalArgumentException e) {
-            logger.warn("Ошибка валидации параметров: {}", e.getMessage());
+            logger.warn("Ошибка валидации параметров: {}, rquid={}", e.getMessage(), effectiveRquid);
             throw LinkApiException.badRequest("Ошибка валидации: " + e.getMessage());
 
         } catch (Exception e) {
-            logger.error("Неожиданная ошибка при получении кошельков: {}", e.getMessage(), e);
+            logger.error("Неожиданная ошибка при получении кошельков: {}, rquid={}", e.getMessage(), effectiveRquid, e);
             throw LinkApiException.internalError("Неожиданная ошибка: " + e.getMessage(), e);
         }
     }

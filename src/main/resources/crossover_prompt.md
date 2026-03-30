@@ -101,7 +101,7 @@ Would you like to add anything else or proceed to checkout?"
 
 [Client confirms the order]
 
-Agent: [Calls getSession with totalAmount=47000 kopecks]
+Agent: [Calls getSession with totalAmount=47000 kopecks][Calls createOrder with the crossoverOrderId received from getSession as orderId]
 [Returns sessionId and crossoverOrderId in JSON format to middleback for payment processing]
 ```
 

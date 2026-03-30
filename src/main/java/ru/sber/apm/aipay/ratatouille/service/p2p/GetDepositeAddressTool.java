@@ -32,11 +32,13 @@ public class GetDepositeAddressTool {
             @McpToolParam(description = "UUID пользователя") String agentUserID,
             @McpToolParam(description = "Уникальный идентификатор запроса (по умолчанию генерируется автоматически)", required = false) String rquid) {
 
+        rquid = rquid != null ? rquid : java.util.UUID.randomUUID().toString();
+
         try {
             var parsedWalletId = LinkValidationUtil.requireValidUuid(walletId, "walletId");
             var headers = LinkHeaders.of(agentUserID, rquid);
 
-            logger.info("Запрос адреса депозита: walletId={}, rquid={}", parsedWalletId, headers.getRquid());
+            logger.info("Запрос адреса депозита: walletId={}, rquid={}", parsedWalletId, rquid);
 
             GetDepositeAddressResponse response = restClient.get()
                     .uri(uriBuilder -> uriBuilder
@@ -50,9 +52,10 @@ public class GetDepositeAddressTool {
                     .body(GetDepositeAddressResponse.class);
 
             logger.debug("Тело ответа {}", response);
-            logger.info("Ответ адреса депозита: walletId={}, address={}",
+            logger.info("Ответ адреса депозита: walletId={}, address={}, rquid={}",
                     parsedWalletId,
-                    response != null ? maskAddress(response.getDepositeAddress()) : null);
+                    response != null ? maskAddress(response.getDepositeAddress()) : null,
+                    rquid);
 
             return response;
         } catch (LinkApiException e) {
@@ -62,8 +65,8 @@ public class GetDepositeAddressTool {
             HttpStatusCode statusCode = e.getStatusCode();
             String responseBody = e.getResponseBodyAsString();
 
-            logger.error("HTTP ошибка от LINK API при выводе средств: status={}, body={}",
-                    statusCode, truncate(responseBody));
+            logger.error("HTTP ошибка от LINK API при выводе средств: status={}, body={}, rquid={}",
+                    statusCode, truncate(responseBody), rquid);
 
             switch (statusCode.value()) {
                 case 400 -> throw LinkApiException.badRequest("Ошибка валидации: " + responseBody);
@@ -83,7 +86,7 @@ public class GetDepositeAddressTool {
 
         } catch (ResourceAccessException e) {
             String causeMessage = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
-            logger.error("Ошибка соединения с LINK API: {}", causeMessage, e);
+            logger.error("Ошибка соединения с LINK API: {}, rquid={}", causeMessage, rquid, e);
 
             if (causeMessage != null && causeMessage.toLowerCase().contains("timeout")) {
                 throw LinkApiException.timeoutError("Таймаут соединения с LINK API");
@@ -95,11 +98,11 @@ public class GetDepositeAddressTool {
             throw LinkApiException.connectionError("Ошибка соединения с LINK API: " + causeMessage, e);
 
         } catch (IllegalArgumentException e) {
-            logger.warn("Ошибка валидации параметров вывода: {}", e.getMessage());
+            logger.warn("Ошибка валидации параметров вывода: {}, rquid={}", e.getMessage(), rquid);
             throw LinkApiException.badRequest("Ошибка валидации: " + e.getMessage());
 
         } catch (Exception e) {
-            logger.error("Неожиданная ошибка при выводе средств: {}", e.getMessage(), e);
+            logger.error("Неожиданная ошибка при выводе средств: {}, rquid={}", e.getMessage(), rquid, e);
             throw LinkApiException.internalError("Неожиданная ошибка: " + e.getMessage(), e);
         }
     }

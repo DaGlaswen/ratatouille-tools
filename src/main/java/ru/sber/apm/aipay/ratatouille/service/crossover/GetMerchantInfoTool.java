@@ -37,15 +37,17 @@ public class GetMerchantInfoTool {
             @McpToolParam(description = "Уникальный идентификатор запроса (по умолчанию генерируется автоматически)", required = false) String rqUID,
             @McpToolParam(description = "ID сессии на фронтенде (опционально)", required = false) String localSessionId) {
 
+        rqUID = rqUID != null ? rqUID : java.util.UUID.randomUUID().toString();
+
         try {
             var headers = CrossoverHeaders.builder()
                     .authorization(crossoverApiProperties.getApiKey())
                     .timestamp(Utils.getCurrentTimestamp())
-                    .rqUID(rqUID != null ? rqUID : java.util.UUID.randomUUID().toString())
+                    .rqUID(rqUID)
                     .localSessionId(localSessionId)
                     .build();
 
-            logger.info("Запрос информации о партнере: extBranchId={}, rqUID={}", extBranchId, headers.getRqUID());
+            logger.info("Запрос информации о партнере: extBranchId={}, rqUID={}", extBranchId, rqUID);
 
             MerchantInfo response = restClient.get()
                     .uri(uriBuilder -> uriBuilder
@@ -59,14 +61,15 @@ public class GetMerchantInfoTool {
                     .retrieve()
                     .body(MerchantInfo.class);
 
-            logger.info("ЗАГОЛОВОК Authorization: {}", headers.getAuthorization());
+            logger.info("ЗАГОЛОВОК Authorization: {}, rqUID={}", headers.getAuthorization(), rqUID);
             if (response == null) {
                 throw CrossoverApiException.notFound("Партнер", extBranchId);
             }
-            logger.info("Ответ от партнера: pointId={}, name={}, status.active={}",
+            logger.info("Ответ от партнера: pointId={}, name={}, status.active={}, rqUID={}",
                     response.getPointId(),
                     response.getName(),
-                    response.getStatus() != null ? response.getStatus().getActive() : null);
+                    response.getStatus() != null ? response.getStatus().getActive() : null,
+                    rqUID);
 
             return response;
         } catch (CrossoverApiException e) {
@@ -78,7 +81,7 @@ public class GetMerchantInfoTool {
             HttpStatusCode statusCode = e.getStatusCode();
             String responseBody = e.getResponseBodyAsString();
 
-            logger.error("HTTP ошибка от Crossover API: status={}, body={}", statusCode, truncate(responseBody));
+            logger.error("HTTP ошибка от Crossover API: status={}, body={}, rqUID={}", statusCode, truncate(responseBody), rqUID);
 
             switch (statusCode.value()) {
                 case 400 -> throw CrossoverApiException.badRequest("Неверные параметры запроса: " + responseBody);
@@ -98,7 +101,7 @@ public class GetMerchantInfoTool {
         } catch (ResourceAccessException e) {
             // Ошибки соединения (nginx down, timeout, DNS)
             String causeMessage = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
-            logger.error("Ошибка соединения с Crossover API: {}", causeMessage, e);
+            logger.error("Ошибка соединения с Crossover API: {}, rqUID={}", causeMessage, rqUID, e);
 
             if (causeMessage != null && causeMessage.toLowerCase().contains("timeout")) {
                 throw CrossoverApiException.timeoutError("Таймаут соединения с Crossover API");
@@ -114,12 +117,12 @@ public class GetMerchantInfoTool {
 
         } catch (IllegalArgumentException e) {
             // Ошибки валидации URI, параметров
-            logger.warn("Ошибка валидации параметров: {}", e.getMessage());
+            logger.warn("Ошибка валидации параметров: {}, rqUID={}", e.getMessage(), rqUID);
             throw CrossoverApiException.badRequest("Ошибка валидации: " + e.getMessage());
 
         } catch (Exception e) {
             // Все остальные неожиданные ошибки
-            logger.error("Неожиданная ошибка при получении информации о партнере: {}", e.getMessage(), e);
+            logger.error("Неожиданная ошибка при получении информации о партнере: {}, rqUID={}", e.getMessage(), rqUID, e);
             throw CrossoverApiException.internalError("Неожиданная ошибка: " + e.getMessage(), e);
         }
     }

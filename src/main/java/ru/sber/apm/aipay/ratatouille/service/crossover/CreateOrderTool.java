@@ -45,11 +45,13 @@ public class CreateOrderTool {
             @McpToolParam(description = "Уникальный идентификатор запроса (по умолчанию генерируется автоматически)", required = false) String rqUID,
             @McpToolParam(description = "ID сессии на фронтенде (опционально)", required = false) String localSessionId) {
 
+        String effectiveRqUID = rqUID != null ? rqUID : java.util.UUID.randomUUID().toString();
+
         try {
             var headers = CrossoverHeaders.builder()
                     .authorization(crossoverApiProperties.getApiKey())
                     .timestamp(Utils.getCurrentTimestamp())
-                    .rqUID(rqUID != null ? rqUID : java.util.UUID.randomUUID().toString())
+                    .rqUID(effectiveRqUID)
                     .localSessionId(localSessionId)
                     .build();
 
@@ -70,9 +72,10 @@ public class CreateOrderTool {
                             .toList() : null)
                     .build();
 
-            logger.info("Создание заказа: orderId={}, subId={}, pointId={}, totalAmount={}, itemsCount={}",
+            logger.info("Создание заказа: orderId={}, subId={}, pointId={}, totalAmount={}, itemsCount={}, rqUID={}",
                     orderId, subId, pointId, totalAmount,
-                    request.getItems() != null ? request.getItems().size() : 0);
+                    request.getItems() != null ? request.getItems().size() : 0,
+                    effectiveRqUID);
 
             QR response = restClient.post()
                     .uri(CrossoverConstants.ENDPOINT_ORDER_CREATE)
@@ -84,8 +87,9 @@ public class CreateOrderTool {
                     .retrieve()
                     .body(QR.class);
 
-            logger.info("Заказ создан: verificationCode={}",
-                    response != null ? response.getVerificationCode() : null);
+            logger.info("Заказ создан: verificationCode={}, rqUID={}",
+                    response != null ? response.getVerificationCode() : null,
+                    effectiveRqUID);
 
             return response;
         } catch (CrossoverApiException e) {
@@ -97,7 +101,7 @@ public class CreateOrderTool {
             HttpStatusCode statusCode = e.getStatusCode();
             String responseBody = e.getResponseBodyAsString();
 
-            logger.error("HTTP ошибка от Crossover API: status={}, body={}", statusCode, truncate(responseBody));
+            logger.error("HTTP ошибка от Crossover API: status={}, body={}, rqUID={}", statusCode, truncate(responseBody), effectiveRqUID);
 
             switch (statusCode.value()) {
                 case 400 -> throw CrossoverApiException.badRequest("Неверные параметры запроса: " + responseBody);
@@ -116,7 +120,7 @@ public class CreateOrderTool {
         } catch (ResourceAccessException e) {
             // Ошибки соединения (nginx down, timeout, DNS)
             String causeMessage = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
-            logger.error("Ошибка соединения с Crossover API: {}", causeMessage, e);
+            logger.error("Ошибка соединения с Crossover API: {}, rqUID={}", causeMessage, effectiveRqUID, e);
 
             if (causeMessage != null && causeMessage.toLowerCase().contains("timeout")) {
                 throw CrossoverApiException.timeoutError("Таймаут соединения с Crossover API");
@@ -132,12 +136,12 @@ public class CreateOrderTool {
 
         } catch (IllegalArgumentException e) {
             // Ошибки валидации URI, параметров
-            logger.warn("Ошибка валидации параметров: {}", e.getMessage());
+            logger.warn("Ошибка валидации параметров: {}, rqUID={}", e.getMessage(), effectiveRqUID);
             throw CrossoverApiException.badRequest("Ошибка валидации: " + e.getMessage());
 
         } catch (Exception e) {
             // Все остальные неожиданные ошибки
-            logger.error("Неожиданная ошибка при получении информации о партнере: {}", e.getMessage(), e);
+            logger.error("Неожиданная ошибка при создании заказа: {}, rqUID={}", e.getMessage(), effectiveRqUID, e);
             throw CrossoverApiException.internalError("Неожиданная ошибка: " + e.getMessage(), e);
         }
     }

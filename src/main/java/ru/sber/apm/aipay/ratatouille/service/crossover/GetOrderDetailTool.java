@@ -42,18 +42,20 @@ public class GetOrderDetailTool {
             @McpToolParam(description = "Уникальный идентификатор запроса (по умолчанию генерируется автоматически)", required = false) String rqUID,
             @McpToolParam(description = "ID сессии на фронтенде (опционально)", required = false) String localSessionId) {
 
+        rqUID = rqUID != null ? rqUID : java.util.UUID.randomUUID().toString();
+
         try {
             UUID parsedExtBranchId = extBranchId != null ? CrossoverValidationUtil.parseUuidSafe(extBranchId) : null;
 
             var headers = CrossoverHeaders.builder()
                     .authorization(crossoverApiProperties.getApiKey())
                     .timestamp(Utils.getCurrentTimestamp())
-                    .rqUID(rqUID != null ? rqUID : java.util.UUID.randomUUID().toString())
+                    .rqUID(rqUID)
                     .localSessionId(localSessionId)
                     .build();
 
-            logger.info("Запрос детали заказа: orderId={}, subId={}, extBranchId={}",
-                    orderId, subId, parsedExtBranchId);
+            logger.info("Запрос детали заказа: orderId={}, subId={}, extBranchId={}, rqUID={}",
+                    orderId, subId, parsedExtBranchId, rqUID);
 
             OrderDetailResponse response = restClient.get()
                     .uri(uriBuilder -> {
@@ -72,9 +74,10 @@ public class GetOrderDetailTool {
                     .retrieve()
                     .body(OrderDetailResponse.class);
 
-            logger.info("Ответ детали заказа: orderId={}, productsCount={}",
+            logger.info("Ответ детали заказа: orderId={}, productsCount={}, rqUID={}",
                     orderId,
-                    response != null && response.getProducts() != null ? response.getProducts().size() : 0);
+                    response != null && response.getProducts() != null ? response.getProducts().size() : 0,
+                    rqUID);
 
             return response;
         } catch (CrossoverApiException e) {
@@ -86,7 +89,7 @@ public class GetOrderDetailTool {
             HttpStatusCode statusCode = e.getStatusCode();
             String responseBody = e.getResponseBodyAsString();
 
-            logger.error("HTTP ошибка от Crossover API: status={}, body={}", statusCode, truncate(responseBody));
+            logger.error("HTTP ошибка от Crossover API: status={}, body={}, rqUID={}", statusCode, truncate(responseBody), rqUID);
 
             switch (statusCode.value()) {
                 case 400 -> throw CrossoverApiException.badRequest("Неверные параметры запроса: " + responseBody);
@@ -106,7 +109,7 @@ public class GetOrderDetailTool {
         } catch (ResourceAccessException e) {
             // Ошибки соединения (nginx down, timeout, DNS)
             String causeMessage = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
-            logger.error("Ошибка соединения с Crossover API: {}", causeMessage, e);
+            logger.error("Ошибка соединения с Crossover API: {}, rqUID={}", causeMessage, rqUID, e);
 
             if (causeMessage != null && causeMessage.toLowerCase().contains("timeout")) {
                 throw CrossoverApiException.timeoutError("Таймаут соединения с Crossover API");
@@ -122,12 +125,12 @@ public class GetOrderDetailTool {
 
         } catch (IllegalArgumentException e) {
             // Ошибки валидации URI, параметров
-            logger.warn("Ошибка валидации параметров: {}", e.getMessage());
+            logger.warn("Ошибка валидации параметров: {}, rqUID={}", e.getMessage(), rqUID);
             throw CrossoverApiException.badRequest("Ошибка валидации: " + e.getMessage());
 
         } catch (Exception e) {
             // Все остальные неожиданные ошибки
-            logger.error("Неожиданная ошибка при получении информации о партнере: {}", e.getMessage(), e);
+            logger.error("Неожиданная ошибка при получении детали заказа: {}, rqUID={}", e.getMessage(), rqUID, e);
             throw CrossoverApiException.internalError("Неожиданная ошибка: " + e.getMessage(), e);
         }
     }

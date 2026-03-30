@@ -32,6 +32,8 @@ public class CreateWalletTool {
             @McpToolParam(description = "Валюта кошелька (ETH, BTC, USDT, TON)") String coin,
             @McpToolParam(description = "Уникальный идентификатор запроса (по умолчанию генерируется автоматически)", required = false) String rquid) {
 
+        rquid = rquid != null ? rquid : java.util.UUID.randomUUID().toString();
+
         if (coin == null || coin.isBlank()) {
             throw LinkApiException.badRequest("Валюта кошелька обязательна");
         }
@@ -41,7 +43,7 @@ public class CreateWalletTool {
                 .coin(coin)
                 .build();
 
-        logger.info("Запрос создания кошелька: coin={}, rquid={}", coin, headers.getRquid());
+        logger.info("Запрос создания кошелька: coin={}, rquid={}", coin, rquid);
 
         try {
             Wallet result = restClient.post()
@@ -54,10 +56,11 @@ public class CreateWalletTool {
                     .retrieve()
                     .body(Wallet.class);
 
-            logger.info("Кошелек создан: walletId={}, coin={}, status={}",
+            logger.info("Кошелек создан: walletId={}, coin={}, status={}, rquid={}",
                     result != null ? result.getId() : null,
                     result != null ? result.getCoin() : null,
-                    result != null ? result.getStatus() : null);
+                    result != null ? result.getStatus() : null,
+                    rquid);
 
             return result;
 
@@ -68,8 +71,8 @@ public class CreateWalletTool {
             HttpStatusCode statusCode = e.getStatusCode();
             String responseBody = e.getResponseBodyAsString();
 
-            logger.error("HTTP ошибка от LINK API при создании кошелька: status={}, body={}",
-                    statusCode, truncate(responseBody));
+            logger.error("HTTP ошибка от LINK API при создании кошелька: status={}, body={}, rquid={}",
+                    statusCode, truncate(responseBody), rquid);
 
             switch (statusCode.value()) {
                 case 400 -> throw LinkApiException.badRequest("Ошибка валидации: " + responseBody);
@@ -88,7 +91,7 @@ public class CreateWalletTool {
 
         } catch (ResourceAccessException e) {
             String causeMessage = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
-            logger.error("Ошибка соединения с LINK API: {}", causeMessage, e);
+            logger.error("Ошибка соединения с LINK API: {}, rquid={}", causeMessage, rquid, e);
 
             if (causeMessage != null && causeMessage.toLowerCase().contains("timeout")) {
                 throw LinkApiException.timeoutError("Таймаут соединения с LINK API");
@@ -100,19 +103,19 @@ public class CreateWalletTool {
             throw LinkApiException.connectionError("Ошибка соединения с LINK API: " + causeMessage, e);
 
         } catch (IllegalArgumentException e) {
-            logger.warn("Ошибка валидации параметров: {}", e.getMessage());
+            logger.warn("Ошибка валидации параметров: {}, rquid={}", e.getMessage(), rquid);
             throw LinkApiException.badRequest("Ошибка валидации: " + e.getMessage());
         } catch (org.springframework.web.client.UnknownContentTypeException e) {
             HttpStatusCode statusCode = e.getStatusCode();
             String responseBody = e.getResponseBodyAsString();
 
-            logger.error("HTTP ошибка от LINK API при создании кошелька. Неизвестный content-type: status={}, body={}",
-                    statusCode, truncate(responseBody), e);
+            logger.error("HTTP ошибка от LINK API при создании кошелька. Неизвестный content-type: status={}, body={}, rquid={}",
+                    statusCode, truncate(responseBody), rquid, e);
 
             throw LinkApiException.internalError(
                     "Неожиданная HTTP ошибка при создании кошелька: " + statusCode, e);
         } catch (Exception e) {
-            logger.error("Неожиданная ошибка при создании кошелька: {}", e.getMessage(), e);
+            logger.error("Неожиданная ошибка при создании кошелька: {}, rquid={}", e.getMessage(), rquid, e);
             throw LinkApiException.internalError("Неожиданная ошибка: " + e.getMessage(), e);
         }
     }

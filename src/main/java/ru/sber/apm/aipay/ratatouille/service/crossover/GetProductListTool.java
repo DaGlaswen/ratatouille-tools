@@ -34,7 +34,6 @@ public class GetProductListTool {
         this.crossoverApiProperties = crossoverApiProperties;
     }
 
-    // TODO try catch или exception handler
     @McpTool(description = "Получить каталог товаров партнера с поддержкой пагинации и фильтрации по категории")
     public ProductListResponse getProductList(
             @McpToolParam(description = "ID партнера в кроссовере (обязательный)") String pointId,
@@ -43,6 +42,8 @@ public class GetProductListTool {
             @McpToolParam(description = "ID категории для фильтрации товаров (опционально)", required = false) String categoryId,
             @McpToolParam(description = "Уникальный идентификатор запроса (по умолчанию генерируется автоматически)", required = false) String rqUID,
             @McpToolParam(description = "ID сессии на фронтенде (опционально)", required = false) String localSessionId) {
+
+        rqUID = rqUID != null ? rqUID : java.util.UUID.randomUUID().toString();
 
         try {
             // Валидация пагинации
@@ -53,12 +54,12 @@ public class GetProductListTool {
             var headers = CrossoverHeaders.builder()
                     .authorization(crossoverApiProperties.getApiKey())
                     .timestamp(Utils.getCurrentTimestamp())
-                    .rqUID(rqUID != null ? rqUID : java.util.UUID.randomUUID().toString())
+                    .rqUID(rqUID)
                     .localSessionId(localSessionId)
                     .build();
 
-            logger.info("Запрос каталога товаров: pointId={}, page={}, limit={}, categoryId={}",
-                    pointId, page, limit, categoryId);
+            logger.info("Запрос каталога товаров: pointId={}, page={}, limit={}, categoryId={}, rqUID={}",
+                    pointId, page, limit, categoryId, rqUID);
 
             ProductListResponse response = restClient.get()
                     .uri(uriBuilder -> {
@@ -86,11 +87,12 @@ public class GetProductListTool {
                 throw CrossoverApiException.notFound("Список продуктов из точки", pointId);
             }
 
-            logger.info("Ответ каталога товаров: найдено {} товаров, страница {}/{}, всего {} записей",
+            logger.info("Ответ каталога товаров: найдено {} товаров, страница {}/{}, всего {} записей, rqUID={}",
                     response.getProducts() != null ? response.getProducts().size() : 0,
                     response.getPagination() != null ? response.getPagination().getCurrentPage() : 1,
                     response.getPagination() != null ? response.getPagination().getTotalPages() : 1,
-                    response.getPagination() != null ? response.getPagination().getTotalItems() : 0);
+                    response.getPagination() != null ? response.getPagination().getTotalItems() : 0,
+                    rqUID);
 
             return response;
         } catch (CrossoverApiException e) {
@@ -102,7 +104,7 @@ public class GetProductListTool {
             HttpStatusCode statusCode = e.getStatusCode();
             String responseBody = e.getResponseBodyAsString();
 
-            logger.error("HTTP ошибка от Crossover API: status={}, body={}", statusCode, truncate(responseBody));
+            logger.error("HTTP ошибка от Crossover API: status={}, body={}, rqUID={}", statusCode, truncate(responseBody), rqUID);
 
             switch (statusCode.value()) {
                 case 400 -> throw CrossoverApiException.badRequest("Неверные параметры запроса: " + responseBody);
@@ -122,7 +124,7 @@ public class GetProductListTool {
         } catch (ResourceAccessException e) {
             // Ошибки соединения (nginx down, timeout, DNS)
             String causeMessage = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
-            logger.error("Ошибка соединения с Crossover API: {}", causeMessage, e);
+            logger.error("Ошибка соединения с Crossover API: {}, rqUID={}", causeMessage, rqUID, e);
 
             if (causeMessage != null && causeMessage.toLowerCase().contains("timeout")) {
                 throw CrossoverApiException.timeoutError("Таймаут соединения с Crossover API");
@@ -138,12 +140,12 @@ public class GetProductListTool {
 
         } catch (IllegalArgumentException e) {
             // Ошибки валидации URI, параметров
-            logger.warn("Ошибка валидации параметров: {}", e.getMessage());
+            logger.warn("Ошибка валидации параметров: {}, rqUID={}", e.getMessage(), rqUID);
             throw CrossoverApiException.badRequest("Ошибка валидации: " + e.getMessage());
 
         } catch (Exception e) {
             // Все остальные неожиданные ошибки
-            logger.error("Неожиданная ошибка при получении информации о партнере: {}", e.getMessage(), e);
+            logger.error("Неожиданная ошибка при получении каталога товаров: {}, rqUID={}", e.getMessage(), rqUID, e);
             throw CrossoverApiException.internalError("Неожиданная ошибка: " + e.getMessage(), e);
         }
     }

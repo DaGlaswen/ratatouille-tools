@@ -35,6 +35,8 @@ public class WithdrawTool {
             @McpToolParam(description = "Сумма вывода в минимальных единицах монеты (wei для ETH, satoshi для BTC)") String value,
             @McpToolParam(description = "Уникальный идентификатор запроса (по умолчанию генерируется автоматически)", required = false) String rquid) {
 
+        String effectiveRquid = rquid != null ? rquid : java.util.UUID.randomUUID().toString();
+
         // Валидация входных параметров
         if (walletId == null || walletId.isBlank()) {
             throw LinkApiException.badRequest("walletId обязателен");
@@ -55,14 +57,14 @@ public class WithdrawTool {
             throw LinkApiException.badRequest("Неверный формат суммы: " + value);
         }
 
-        var headers = LinkHeaders.of(agentUserID, rquid);
+        var headers = LinkHeaders.of(agentUserID, effectiveRquid);
         var request = WithdrawRequest.builder()
                 .to(to)
                 .value(value)
                 .build();
 
         logger.info("Запрос вывода средств: walletId={}, to={}, value={}, rquid={}",
-                parsedWalletId, maskAddress(to), value, headers.getRquid());
+                parsedWalletId, maskAddress(to), value, effectiveRquid);
 
         try {
             Wallet result = restClient.post()
@@ -77,8 +79,9 @@ public class WithdrawTool {
                     .retrieve()
                     .body(Wallet.class);
 
-            logger.info("Вывод средств инициирован: walletId={}, status={}",
-                    parsedWalletId, result != null ? result.getStatus() : null);
+            logger.info("Вывод средств инициирован: walletId={}, status={}, rquid={}",
+                    parsedWalletId, result != null ? result.getStatus() : null,
+                    effectiveRquid);
 
             return result;
 
@@ -89,8 +92,8 @@ public class WithdrawTool {
             HttpStatusCode statusCode = e.getStatusCode();
             String responseBody = e.getResponseBodyAsString();
 
-            logger.error("HTTP ошибка от LINK API при выводе средств: status={}, body={}",
-                    statusCode, truncate(responseBody));
+            logger.error("HTTP ошибка от LINK API при выводе средств: status={}, body={}, rquid={}",
+                    statusCode, truncate(responseBody), effectiveRquid);
 
             switch (statusCode.value()) {
                 case 400 -> throw LinkApiException.badRequest("Ошибка валидации: " + responseBody);
@@ -110,7 +113,7 @@ public class WithdrawTool {
 
         } catch (ResourceAccessException e) {
             String causeMessage = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
-            logger.error("Ошибка соединения с LINK API: {}", causeMessage, e);
+            logger.error("Ошибка соединения с LINK API: {}, rquid={}", causeMessage, effectiveRquid, e);
 
             if (causeMessage != null && causeMessage.toLowerCase().contains("timeout")) {
                 throw LinkApiException.timeoutError("Таймаут соединения с LINK API");
@@ -122,11 +125,11 @@ public class WithdrawTool {
             throw LinkApiException.connectionError("Ошибка соединения с LINK API: " + causeMessage, e);
 
         } catch (IllegalArgumentException e) {
-            logger.warn("Ошибка валидации параметров вывода: {}", e.getMessage());
+            logger.warn("Ошибка валидации параметров вывода: {}, rquid={}", e.getMessage(), effectiveRquid);
             throw LinkApiException.badRequest("Ошибка валидации: " + e.getMessage());
 
         } catch (Exception e) {
-            logger.error("Неожиданная ошибка при выводе средств: {}", e.getMessage(), e);
+            logger.error("Неожиданная ошибка при выводе средств: {}, rquid={}", e.getMessage(), effectiveRquid, e);
             throw LinkApiException.internalError("Неожиданная ошибка: " + e.getMessage(), e);
         }
     }

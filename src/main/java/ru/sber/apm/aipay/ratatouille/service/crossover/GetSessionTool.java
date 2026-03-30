@@ -39,12 +39,14 @@ public class GetSessionTool {
             @McpToolParam(description = "Общая сумма заказа") String totalAmount,
             @McpToolParam(description = "qrData полученный из метода getMerchantInfo") String qrData) {
 
+        rqUID = rqUID != null ? rqUID : UUID.randomUUID().toString();
+
         try {
 
             var headers = CrossoverHeaders.builder()
                     .authorization(crossoverApiProperties.getApiKey())
                     .timestamp(Utils.getCurrentTimestampZ())
-                    .rqUID(rqUID != null ? rqUID : UUID.randomUUID().toString())
+                    .rqUID(rqUID)
                     .build();
 
             var request = GetSessionRequest.builder()
@@ -53,7 +55,7 @@ public class GetSessionTool {
                     .scenario("multiQR")
                     .build();
 
-            logger.info("Запрос на создание сессии для платежа: rqUid={}, totalAmount={}, qrData={}", headers.getRqUID(), totalAmount, qrData);
+            logger.info("Запрос на создание сессии для платежа: totalAmount={}, qrData={}, rqUID={}", totalAmount, qrData, rqUID);
 
             GetSessionResponse response = restClient.post()
                     .uri(CrossoverConstants.ENDPOINT_SESSION_ID_WEB)
@@ -72,8 +74,8 @@ public class GetSessionTool {
                 throw CrossoverApiException.badRequest("Ошибка при создании сессии");
             }
 
-            logger.info("Ответ на создание сессии для платежа: orderId={}, sessionId={}",
-                    response.getOrderId(), response.getSessionId());
+            logger.info("Ответ на создание сессии для платежа: orderId={}, sessionId={}, rqUID={}",
+                    response.getOrderId(), response.getSessionId(), rqUID);
 
             return response;
         } catch (CrossoverApiException e) {
@@ -85,7 +87,7 @@ public class GetSessionTool {
             HttpStatusCode statusCode = e.getStatusCode();
             String responseBody = e.getResponseBodyAsString();
 
-            logger.error("HTTP ошибка от Crossover API: status={}, body={}", statusCode, truncate(responseBody));
+            logger.error("HTTP ошибка от Crossover API: status={}, body={}, rqUID={}", statusCode, truncate(responseBody), rqUID);
 
             switch (statusCode.value()) {
                 case 400 -> throw CrossoverApiException.badRequest("Неверные параметры запроса: " + responseBody);
@@ -104,7 +106,7 @@ public class GetSessionTool {
         } catch (ResourceAccessException e) {
             // Ошибки соединения (nginx down, timeout, DNS)
             String causeMessage = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
-            logger.error("Ошибка соединения с Crossover API: {}", causeMessage, e);
+            logger.error("Ошибка соединения с Crossover API: {}, rqUID={}", causeMessage, rqUID, e);
 
             if (causeMessage != null && causeMessage.toLowerCase().contains("timeout")) {
                 throw CrossoverApiException.timeoutError("Таймаут соединения с Crossover API");
@@ -120,12 +122,12 @@ public class GetSessionTool {
 
         } catch (IllegalArgumentException e) {
             // Ошибки валидации URI, параметров
-            logger.warn("Ошибка валидации параметров: {}", e.getMessage());
+            logger.warn("Ошибка валидации параметров: {}, rqUID={}", e.getMessage(), rqUID);
             throw CrossoverApiException.badRequest("Ошибка валидации: " + e.getMessage());
 
         } catch (Exception e) {
             // Все остальные неожиданные ошибки
-            logger.error("Неожиданная ошибка при получении информации о партнере: {}", e.getMessage(), e);
+            logger.error("Неожиданная ошибка при создании сессии: {}, rqUID={}", e.getMessage(), rqUID, e);
             throw CrossoverApiException.internalError("Неожиданная ошибка: " + e.getMessage(), e);
         }
     }

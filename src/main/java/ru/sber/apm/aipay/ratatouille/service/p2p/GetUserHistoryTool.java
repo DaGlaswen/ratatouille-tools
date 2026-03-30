@@ -33,16 +33,18 @@ public class GetUserHistoryTool {
             @McpToolParam(description = "Размер страницы пагинации", required = false) String pageSize,
             @McpToolParam(description = "Уникальный идентификатор запроса (по умолчанию генерируется автоматически)", required = false) String rquid) {
 
-        var headers = LinkHeaders.of(agentUserID, rquid);
+        String effectiveRquid = rquid != null ? rquid : java.util.UUID.randomUUID().toString();
+
+        var headers = LinkHeaders.of(agentUserID, effectiveRquid);
 
         logger.info("Запрос общей истории пользователя: lastRecordId={}, lastCreated={}, rquid={}",
-                lastRecordId, lastCreated, headers.getRquid());
+                lastRecordId, lastCreated, effectiveRquid);
 
         try {
             TransactionHistoryResponse response = restClient.get()
                     .uri(uriBuilder -> {
                         uriBuilder.path(LinkConstants.ENDPOINT_USER_HISTORY);
-                        
+
                         if (lastCreated != null && !lastCreated.isBlank()) {
                             uriBuilder.queryParam("last_created", lastCreated);
                         }
@@ -61,9 +63,10 @@ public class GetUserHistoryTool {
                     .retrieve()
                     .body(TransactionHistoryResponse.class);
 
-            logger.info("Получена общая история пользователя: recordCount={}, hasMore={}",
+            logger.info("Получена общая история пользователя: recordCount={}, hasMore={}, rquid={}",
                     response != null && response.getTransactionHistoryRecords() != null ? response.getTransactionHistoryRecords().size() : 0,
-                    response != null && response.getIsExist() != null ? response.getIsExist() : false);
+                    response != null && response.getIsExist() != null ? response.getIsExist() : false,
+                    effectiveRquid);
 
             return response;
 
@@ -74,8 +77,8 @@ public class GetUserHistoryTool {
             HttpStatusCode statusCode = e.getStatusCode();
             String responseBody = e.getResponseBodyAsString();
 
-            logger.error("HTTP ошибка от LINK API при получении общей истории: status={}, body={}",
-                    statusCode, truncate(responseBody));
+            logger.error("HTTP ошибка от LINK API при получении общей истории: status={}, body={}, rquid={}",
+                    statusCode, truncate(responseBody), effectiveRquid);
 
             switch (statusCode.value()) {
                 case 400 -> throw LinkApiException.badRequest("Ошибка валидации: " + responseBody);
@@ -93,7 +96,7 @@ public class GetUserHistoryTool {
 
         } catch (ResourceAccessException e) {
             String causeMessage = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
-            logger.error("Ошибка соединения с LINK API: {}", causeMessage, e);
+            logger.error("Ошибка соединения с LINK API: {}, rquid={}", causeMessage, effectiveRquid, e);
 
             if (causeMessage != null && causeMessage.toLowerCase().contains("timeout")) {
                 throw LinkApiException.timeoutError("Таймаут соединения с LINK API");
@@ -105,11 +108,11 @@ public class GetUserHistoryTool {
             throw LinkApiException.connectionError("Ошибка соединения с LINK API: " + causeMessage, e);
 
         } catch (IllegalArgumentException e) {
-            logger.warn("Ошибка валидации параметров: {}", e.getMessage());
+            logger.warn("Ошибка валидации параметров: {}, rquid={}", e.getMessage(), effectiveRquid);
             throw LinkApiException.badRequest("Ошибка валидации: " + e.getMessage());
 
         } catch (Exception e) {
-            logger.error("Неожиданная ошибка при получении общей истории: {}", e.getMessage(), e);
+            logger.error("Неожиданная ошибка при получении общей истории: {}, rquid={}", e.getMessage(), effectiveRquid, e);
             throw LinkApiException.internalError("Неожиданная ошибка: " + e.getMessage(), e);
         }
     }
