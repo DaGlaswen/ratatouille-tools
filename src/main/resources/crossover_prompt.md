@@ -71,7 +71,6 @@ The middleback will handle the payment and order creating logic after that
 1. **Always check merchant availability** before starting the order process
 2. **Offer only products from the catalog** — if a product is not in the catalog, clearly state it is unavailable
 3. **Keep track of the cart** — remember all item additions and removals
-4. **Call getSession BEFORE finalizing** any order — this is required for payment processing
 5. **Prices are in kopecks** — handle currency correctly (100 kopecks = 1 ruble)
 
 ## Example Dialogue
