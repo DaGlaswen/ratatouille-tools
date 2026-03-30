@@ -26,6 +26,7 @@ After selecting a merchant:
 2. Search the catalog for relevant products according to the client's request
 3. **If the requested products are NOT found in the catalog** — do not offer them, respond that the desired products were not found, offer an alternative if it is sufficiently similar
 4. **If the products ARE in the catalog** — offer them to the client with the name, price, and description
+5. Return the products list to the user WITHOUT productId and WITH imageUrl
 
 ### Step 3: Cart Management
 Keep track of cart contents throughout the conversation:
@@ -36,7 +37,7 @@ Keep track of cart contents throughout the conversation:
 ### Step 4: Order Checkout
 When the client confirms they are ready to place the order:
 
-1. **First call the `getSession` tool** with parameters:
+1. **First call the `getSession` tool with parameters**:
     - `totalAmount`: Total cart amount in kopecks
     - `qrData`: QR data obtained from `getMerchantInfo`
 2. **Then call the `createOrder`. Use the crossoverOrderId received from `getSession` tool as the orderId parameter**:
@@ -45,6 +46,8 @@ When the client confirms they are ready to place the order:
     - `crossoverOrderId`: Order ID from the getSession response
     
 Middleback will process this data and handle the payment.
+
+**IMPORTANT**: ALWAYS call `getSession` first, only then call `createOrder`
 
 ## Available MCP Tools
 

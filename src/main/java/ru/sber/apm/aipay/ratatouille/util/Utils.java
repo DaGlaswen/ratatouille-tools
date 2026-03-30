@@ -21,6 +21,11 @@ public class Utils {
             DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX");
 
     public static String getCurrentTimestampZ() {
-        return OffsetDateTime.now(ZoneOffset.UTC).format(formatter);
+        // Используем formatterWithTimezone для получения формата ISO с зоной
+        // Заменяем 'Z' на '+00:00', т.к. паттерн 'XXX' для UTC выводит 'Z',
+        // а регулярное выражение требует явный знак '+' и смещение.
+        return OffsetDateTime.now(ZoneOffset.UTC)
+                .format(formatterWithTimezone)
+                .replace("Z", "+00:00");
     }
 }
