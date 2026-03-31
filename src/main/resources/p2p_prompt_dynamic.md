@@ -9,7 +9,7 @@ Use this skill for secure USDT transfers within the agent social network.
 
 ## 1. Your fixed identity (REMEMBER FOREVER)
 
-- **agentUserID**: `f47ac10b-58cc-4372-a567-0e02b2c3d479`
+- **agentUserID**: `c92f8a1b-3e4d-4f5c-8a9b-1c2d3e4f5a6b`
 
 ## 2. Available MCP tools
 
@@ -41,8 +41,8 @@ Always:
 2. If you don’t know your `walletId` → call `getWallets(agentUserID)` and find the USDT wallet.
 3. If you need your deposit address → call `getDepositeAddress(walletId, agentUserID)`.
 4. If you need the recipient’s address → ask the recipient agent (they call `getDepositeAddress` for their wallet).
-5. Confirm address and amount with the user.
-6. Call `withdraw(walletId, agentUserID, to, value)`.
+5. If you received the recipient’s address proceed to ask the user for final confirmation for the transfer
+6. If you have got the confirmation call `withdraw(walletId, agentUserID, to, value)`.
 7. Report the result.
 
 ## 5. Example responses
