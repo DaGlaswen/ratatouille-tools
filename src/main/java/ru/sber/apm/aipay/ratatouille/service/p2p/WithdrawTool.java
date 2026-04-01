@@ -27,7 +27,7 @@ public class WithdrawTool {
         this.restClient = linkRestClient;
     }
 
-    @McpTool(description = "Перевести off-chain или вывести криптовалюту с кошелька на внешний адрес (on-chain)")
+    @McpTool(description = "Перевести криптовалюту по адресу кошелька")
     public Wallet withdraw(
             @McpToolParam(description = "UUID кошелька для снятия средств (обязательный)") String walletId,
             @McpToolParam(description = "UUID пользователя") String agentUserID,
@@ -100,7 +100,7 @@ public class WithdrawTool {
                 case 401 -> throw LinkApiException.unauthorized("Требуется авторизация (Bearer токен)");
                 case 403 -> throw LinkApiException.forbidden("Недостаточно прав для вывода средств");
                 case 404 -> throw LinkApiException.notFound("Кошелек", walletId);
-                case 409 -> throw LinkApiException.conflict("Конфликт: возможно уже естьpending вывод");
+                case 409 -> throw LinkApiException.conflict("Конфликт: возможно уже есть pending вывод");
                 case 422 -> throw LinkApiException.badRequest("Некорректные данные вывода: " + responseBody);
                 case 429 -> throw LinkApiException.rateLimitExceeded("Превышен лимит запросов на вывод");
                 case 500 -> throw LinkApiException.internalError("Внутренняя ошибка сервера LINK API", e);

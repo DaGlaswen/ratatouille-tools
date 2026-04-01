@@ -1,4 +1,4 @@
-package ru.sber.apm.aipay.ratatouille.config.p2pcrypto;
+package ru.sber.apm.aipay.ratatouille.config.smartring;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,18 +11,18 @@ import java.net.http.HttpClient;
 import java.time.Duration;
 
 @Configuration
-public class LinkRestClientConfig {
+public class SmartRingRestClientConfig {
 
-    private static final Logger logger = LoggerFactory.getLogger(LinkRestClientConfig.class);
+    private static final Logger logger = LoggerFactory.getLogger(SmartRingApiProperties.class);
 
-    private final LinkApiProperties properties;
+    private final SmartRingApiProperties properties;
 
-    public LinkRestClientConfig(LinkApiProperties properties) {
+    public SmartRingRestClientConfig(SmartRingApiProperties properties) {
         this.properties = properties;
     }
 
     @Bean
-    public RestClient linkRestClient() {
+    public RestClient crossoverRestClient() {
         HttpClient httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofMillis(properties.getTimeoutMs()))
                 .build();

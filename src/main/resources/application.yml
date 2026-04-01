@@ -24,22 +24,28 @@ server:
 #    trust-store-password: ""
 #    client-auth: need  # need | want | none
 
-crossover:
-  api:
-    base-url: http://localhost:8008/
-    timeout: 30000
-    apiKey: ${PROM_CROSSOVER_API_KEY}
-
 logging:
   level:
     org.springframework.web.client: DEBUG
     org.springframework.http: DEBUG
     ru.sber.apm.aipay.ratatouille.service.p2pcrypto: DEBUG
 
+crossover:
+  api:
+    base-url: http://localhost:8008/
+    timeout: 30000
+    apiKey: ${PROM_CROSSOVER_API_KEY}
+
 link:
   api:
     base-url: http://localhost:8018/
     timeout-ms: 30000
+
+smartring:
+  api:
+    base-url: http://localhost:8028/
+    timeout: 30000
+    uuid: ${PROM_SMARTRING_UUID}
 
 spring:
   jackson:
