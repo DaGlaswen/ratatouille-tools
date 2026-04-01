@@ -22,7 +22,7 @@ public class SmartRingRestClientConfig {
     }
 
     @Bean
-    public RestClient crossoverRestClient() {
+    public RestClient smartringRestClient() {
         HttpClient httpClient = HttpClient.newBuilder()
                 .connectTimeout(Duration.ofMillis(properties.getTimeoutMs()))
                 .build();
