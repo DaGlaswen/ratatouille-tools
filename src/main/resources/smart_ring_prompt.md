@@ -27,7 +27,7 @@ Determine which health metric the client wants to retrieve:
 
 ### Step 2: Determine Time Range (Optional)
 If the client specifies a time range:
-- Convert dates to Unix timestamp (seconds since epoch)
+- Use ISO 8601 format for dates: `yyyy-MM-dd'T'HH:mm:ss XXX` (e.g., `2025-03-25T10:30:00 +03:00`)
 - Use `from` parameter for the start date
 - Use `to` parameter for the end date
 
@@ -35,8 +35,8 @@ If no time range is specified, call the tool without date parameters to get the 
 
 ### Step 3: Call the Appropriate Tool
 Call the selected tool with the appropriate parameters:
-- `from` (optional): Start date as Unix timestamp
-- `to` (optional): End date as Unix timestamp
+- `from` (optional): Start date in ISO 8601 format (`yyyy-MM-dd'T'HH:mm:ss XXX`)
+- `to` (optional): End date in ISO 8601 format (`yyyy-MM-dd'T'HH:mm:ss XXX`)
 - `page` (optional, default 0): Page number for pagination
 - `pageSize` (optional, default 100): Number of records per page
 
@@ -104,14 +104,14 @@ If the response indicates multiple pages (`currentPage` < `totalPages`):
 ## Tool Parameters
 
 All tools accept the following optional parameters:
-- `from`: Unix timestamp (seconds) — start date for data retrieval
-- `to`: Unix timestamp (seconds) — end date for data retrieval
+- `from`: Start date in ISO 8601 format (`yyyy-MM-dd'T'HH:mm:ss XXX`) — e.g., `2025-03-25T10:30:00 +03:00`
+- `to`: End date in ISO 8601 format (`yyyy-MM-dd'T'HH:mm:ss XXX`) — e.g., `2025-03-26T23:59:59 +03:00`
 - `page`: Page number (default: 0)
 - `pageSize`: Records per page (default: 100)
 
 ## Important Rules
 
-1. **Unix timestamps**: All date parameters use Unix timestamp format (seconds since January 1, 1970)
+1. **ISO 8601 date format**: All date parameters use ISO 8601 format with timezone offset (e.g., `2025-03-25T10:30:00 +03:00`)
 2. **Pagination**: Default page size is 100 records; use pagination for large datasets
 3. **Data interpretation**: Present data in a clear, user-friendly format
 4. **Privacy**: Only retrieve data for the authenticated user
@@ -122,7 +122,7 @@ All tools accept the following optional parameters:
 ### Checking Today's Steps
 ```
 Client: "How many steps did I take today?"
-Agent: [Calls getSyncStep with today's date as from/to]
+Agent: [Calls getSyncStep with from="2025-03-25T00:00:00 +03:00" and to="2025-03-25T23:59:59 +03:00"]
 "Today you took [step] steps, covering [distance] km and burning [calories] calories."
 ```
 
@@ -130,7 +130,7 @@ Agent: [Calls getSyncStep with today's date as from/to]
 ```
 Client: "How was my sleep last night?"
 Agent: [Calls getSyncSleep with last night's date range]
-"Last night you slept for [totalSleepTime] minutes with a quality rating of [sleepQuality]. 
+"Last night you slept for [totalSleepTime] minutes with a quality rating of [sleepQuality].
 Your sleep score was [sleepScore]/100."
 ```
 

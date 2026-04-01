@@ -7,7 +7,6 @@ import org.springframework.ai.mcp.annotation.McpTool;
 import org.springframework.ai.mcp.annotation.McpToolParam;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -18,6 +17,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import ru.sber.apm.aipay.ratatouille.config.smartring.SmartRingApiProperties;
 import ru.sber.apm.aipay.ratatouille.dto.smartring.ExternalAppPageHeartRateResponseDto;
 import ru.sber.apm.aipay.ratatouille.exception.smartring.SmartRingApiException;
+import ru.sber.apm.aipay.ratatouille.util.Utils;
 import ru.sber.apm.aipay.ratatouille.util.smartring.SmartRingConstants;
 
 import java.net.URI;
@@ -27,7 +27,7 @@ import java.util.Collections;
 public class GetSyncHeartRateTool {
 
     private static final Logger logger = LoggerFactory.getLogger(GetSyncHeartRateTool.class);
-    
+
     private final RestClient restClient;
     private final SmartRingApiProperties properties;
 
@@ -38,17 +38,20 @@ public class GetSyncHeartRateTool {
 
     @McpTool(description = "Получить данные синхронизации пульса (Heart Rate) с Smart Ring")
     public ExternalAppPageHeartRateResponseDto getHeartRate(
-            @McpToolParam(description = "С какой даты (unix time) отдавать записи", required = false) Long from,
-            @McpToolParam(description = "По какую дату (unix time) отдавать записи", required = false) Long to,
+            @McpToolParam(description = "С какой даты (формат ISO 8601: yyyy-MM-dd'T'HH:mm:ss XXX) отдавать записи", required = false) String from,
+            @McpToolParam(description = "По какую дату (формат ISO 8601: yyyy-MM-dd'T'HH:mm:ss XXX) отдавать записи", required = false) String to,
             @McpToolParam(description = "Текущая страница (по умолчанию 0)", required = false) Integer page,
             @McpToolParam(description = "Количество записей на странице (по умолчанию 100)", required = false) Integer pageSize) {
 
-        logger.info("Запрос данных синхронизации пульса: from={}, to={}, page={}, pageSize={}", 
+        Long fromUnix = Utils.convertToUnixTimestamp(from, "from");
+        Long toUnix = Utils.convertToUnixTimestamp(to, "to");
+
+        logger.info("Запрос данных синхронизации пульса: from={}, to={}, page={}, pageSize={}",
                 from, to, page, pageSize);
 
         MultiValueMap<@NonNull String, @NonNull String> queryParams = new LinkedMultiValueMap<>();
-        if (from != null) queryParams.put(SmartRingConstants.PARAM_FROM, Collections.singletonList(String.valueOf(from)));
-        if (to != null) queryParams.put(SmartRingConstants.PARAM_TO, Collections.singletonList(String.valueOf(to)));
+        if (fromUnix != null) queryParams.put(SmartRingConstants.PARAM_FROM, Collections.singletonList(String.valueOf(fromUnix)));
+        if (toUnix != null) queryParams.put(SmartRingConstants.PARAM_TO, Collections.singletonList(String.valueOf(toUnix)));
         if (page != null) queryParams.put(SmartRingConstants.PARAM_PAGE, Collections.singletonList(String.valueOf(page)));
         if (pageSize != null) queryParams.put(SmartRingConstants.PARAM_PAGE_SIZE, Collections.singletonList(String.valueOf(pageSize)));
 
@@ -64,10 +67,11 @@ public class GetSyncHeartRateTool {
                     .retrieve()
                     .body(ExternalAppPageHeartRateResponseDto.class);
 
-            logger.info("Ответ синхронизации пульса: записей={}, страница={}/{}", 
+            logger.info("Ответ синхронизации пульса: записей={}, страница={}/{}, тело ответа={}",
                     response != null && response.getContent() != null ? response.getContent().size() : 0,
                     response != null ? response.getCurrentPage() : 0,
-                    response != null ? response.getTotalPages() : 0);
+                    response != null ? response.getTotalPages() : 0,
+                    Utils.toJson(response));
 
             return response;
 

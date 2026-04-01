@@ -1,6 +1,10 @@
 package ru.sber.apm.aipay.ratatouille.util;
 
 import lombok.experimental.UtilityClass;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import ru.sber.apm.aipay.ratatouille.exception.smartring.SmartRingApiException;
+import tools.jackson.databind.ObjectMapper;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -9,6 +13,9 @@ import java.time.format.DateTimeFormatter;
 
 @UtilityClass
 public class Utils {
+
+    private static final Logger logger = LoggerFactory.getLogger(Utils.class);
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private static final DateTimeFormatter formatter =
             DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -27,5 +34,45 @@ public class Utils {
         return OffsetDateTime.now(ZoneOffset.UTC)
                 .format(formatterWithTimezone)
                 .replace("Z", "+00:00");
+    }
+
+    private static final DateTimeFormatter ISO_FORMATTER =
+            DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+
+    /**
+     * Конвертирует дату из ISO 8601 формата (yyyy-MM-dd'T'HH:mm:ss XXX) в Unix timestamp (секунды)
+     *
+     * @param isoDate   дата в формате ISO 8601
+     * @param paramName имя параметра для логирования ошибок
+     * @return Unix timestamp в секундах или null если isoDate null/пустой
+     * @throws SmartRingApiException если формат даты некорректен
+     */
+    public static Long convertToUnixTimestamp(String isoDate, String paramName) {
+        if (isoDate == null || isoDate.isBlank()) {
+            return null;
+        }
+        try {
+            OffsetDateTime odt = OffsetDateTime.parse(isoDate, ISO_FORMATTER);
+            return odt.toEpochSecond();
+        } catch (Exception e) {
+            logger.error("Ошибка парсинга даты {}='{}'. Ожидаемый формат: yyyy-MM-dd'T'HH:mm:ss XXX", paramName, isoDate, e);
+            throw SmartRingApiException.badRequest("Неверный формат даты для параметра " + paramName + ". Ожидаемый формат ISO 8601: yyyy-MM-dd'T'HH:mm:ss XXX");
+        }
+    }
+
+    /**
+     * Сериализует объект в JSON строку
+     *
+     * @param obj объект для сериализации
+     * @return JSON строка или строковое представление объекта при ошибке
+     */
+    public static String toJson(Object obj) {
+        if (obj == null) return "null";
+        try {
+            return objectMapper.writeValueAsString(obj);
+        } catch (Exception e) {
+            logger.warn("Ошибка сериализации объекта в JSON: {}", e.getMessage());
+            return String.valueOf(obj);
+        }
     }
 }
