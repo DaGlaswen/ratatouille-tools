@@ -19,6 +19,7 @@ import ru.sber.apm.aipay.ratatouille.dto.smartring.ExternalAppPageSpo2ResponseDt
 import ru.sber.apm.aipay.ratatouille.exception.smartring.SmartRingApiException;
 import ru.sber.apm.aipay.ratatouille.util.Utils;
 import ru.sber.apm.aipay.ratatouille.util.smartring.SmartRingConstants;
+import ru.sber.apm.aipay.ratatouille.util.smartring.SmartRingUtils;
 
 import java.net.URI;
 import java.util.Collections;
@@ -38,6 +39,7 @@ public class GetSyncSpo2Tool {
 
     @McpTool(description = "Получить данные синхронизации уровня кислорода в крови (SpO2) с Smart Ring")
     public ExternalAppPageSpo2ResponseDto getSpO2(
+            @McpToolParam(description = "UUID авторизации в системе Smart Ring", required = false) String uuid,
             @McpToolParam(description = "С какой даты (формат ISO 8601: yyyy-MM-dd'T'HH:mm:ss XXX) отдавать записи", required = false) String from,
             @McpToolParam(description = "По какую дату (формат ISO 8601: yyyy-MM-dd'T'HH:mm:ss XXX) отдавать записи", required = false) String to,
             @McpToolParam(description = "Текущая страница (по умолчанию 0)", required = false) Integer page,
@@ -45,8 +47,10 @@ public class GetSyncSpo2Tool {
 
         Long fromUnix = Utils.convertToUnixTimestamp(from, "from");
         Long toUnix = Utils.convertToUnixTimestamp(to, "to");
+        String effectiveUuid = uuid != null && !uuid.isBlank() ? uuid : properties.getUuid();
 
-        logger.info("Запрос данных синхронизации SpO2: from={}, to={}, page={}, pageSize={}", from, to, page, pageSize);
+        logger.info("Запрос данных синхронизации SpO2: uuid={}, from={}, to={}, page={}, pageSize={}",
+                SmartRingUtils.maskUuid(effectiveUuid), from, to, page, pageSize);
 
         MultiValueMap<@NonNull String, @NonNull String> queryParams = new LinkedMultiValueMap<>();
         if (fromUnix != null) queryParams.put(SmartRingConstants.PARAM_FROM, Collections.singletonList(String.valueOf(fromUnix)));
@@ -62,7 +66,7 @@ public class GetSyncSpo2Tool {
 
             ExternalAppPageSpo2ResponseDto response = restClient.get()
                     .uri(uri)
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + properties.getUuid())
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + effectiveUuid)
                     .retrieve()
                     .body(ExternalAppPageSpo2ResponseDto.class);
 

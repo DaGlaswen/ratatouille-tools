@@ -12,6 +12,7 @@ description: Help clients retrieve and analyze their health data from Smart Ring
 5. **getSpO2** — get blood oxygen saturation measurements
 6. **getHrv** — get heart rate variability measurements
 7. **getTemperature** — get body temperature measurements
+8. **getAllHealthStatistics** — get all health statistics in a single parallel request (heart rate, sleep, steps, stress, SpO2, HRV, temperature)
 
 ## Workflow
 
@@ -27,16 +28,18 @@ Determine which health metric the client wants to retrieve:
 
 ### Step 2: Determine Time Range (Optional)
 If the client specifies a time range:
-- Use ISO 8601 format for dates: `yyyy-MM-dd'T'HH:mm:ss XXX` (e.g., `2025-03-25T10:30:00 +03:00`)
+- Use ISO 8601 format for dates with **Moscow timezone (+03:00)**: `yyyy-MM-dd'T'HH:mm:ss +03:00`
 - Use `from` parameter for the start date
 - Use `to` parameter for the end date
+
+**Important**: All dates must be in Moscow time (UTC+3). Convert client's local time to Moscow time before sending the request.
 
 If no time range is specified, call the tool without date parameters to get the most recent data.
 
 ### Step 3: Call the Appropriate Tool
 Call the selected tool with the appropriate parameters:
-- `from` (optional): Start date in ISO 8601 format (`yyyy-MM-dd'T'HH:mm:ss XXX`)
-- `to` (optional): End date in ISO 8601 format (`yyyy-MM-dd'T'HH:mm:ss XXX`)
+- `from` (optional): Start date in ISO 8601 format with Moscow time (`yyyy-MM-dd'T'HH:mm:ss +03:00`)
+- `to` (optional): End date in ISO 8601 format with Moscow time (`yyyy-MM-dd'T'HH:mm:ss +03:00`)
 - `page` (optional, default 0): Page number for pagination
 - `pageSize` (optional, default 100): Number of records per page
 
@@ -100,29 +103,70 @@ If the response indicates multiple pages (`currentPage` < `totalPages`):
 5. **getSyncSpo2** — Get blood oxygen (SpO2) data from Smart Ring
 6. **getSyncHrv** — Get heart rate variability (HRV) data from Smart Ring
 7. **getSyncTemperature** — Get body temperature data from Smart Ring
+8. **getAllHealthStatistics** — Get all health statistics in a single parallel request
 
 ## Tool Parameters
 
 All tools accept the following optional parameters:
-- `from`: Start date in ISO 8601 format (`yyyy-MM-dd'T'HH:mm:ss XXX`) — e.g., `2025-03-25T10:30:00 +03:00`
-- `to`: End date in ISO 8601 format (`yyyy-MM-dd'T'HH:mm:ss XXX`) — e.g., `2025-03-26T23:59:59 +03:00`
-- `page`: Page number (default: 0)
-- `pageSize`: Records per page (default: 100)
+- `uuid`: Authorization UUID in Smart Ring system (if not provided, uses default from properties)
+- `from`: Start date in ISO 8601 format with **Moscow time** (`yyyy-MM-dd'T'HH:mm:ss +03:00`) — e.g., `2025-03-25T00:00:00 +03:00`
+- `to`: End date in ISO 8601 format with **Moscow time** (`yyyy-MM-dd'T'HH:mm:ss +03:00`) — e.g., `2025-03-26T23:59:59 +03:00`
+- `page`: Page number (default: 0) — for individual endpoints only
+- `pageSize`: Records per page (default: 100) — for individual endpoints only
+- `limit`: Maximum records per data type (default: 100) — for `getAllHealthStatistics` only
+
+**Note**: 
+- `getAllHealthStatistics` returns `hasMoreData.XXX = true` if data is truncated — use individual endpoints to retrieve complete data.
 
 ## Important Rules
 
-1. **ISO 8601 date format**: All date parameters use ISO 8601 format with timezone offset (e.g., `2025-03-25T10:30:00 +03:00`)
-2. **Pagination**: Default page size is 100 records; use pagination for large datasets
-3. **Data interpretation**: Present data in a clear, user-friendly format
-4. **Privacy**: Only retrieve data for the authenticated user
-5. **Error handling**: Provide clear error messages if the API returns an error
+1. **Moscow Time (UTC+3)**: The client is in Moscow time zone. All date parameters MUST use Moscow time with +03:00 timezone offset (e.g., `2025-03-25T10:30:00 +03:00`)
+2. **ISO 8601 format**: Use the format `yyyy-MM-dd'T'HH:mm:ss +03:00` for all date parameters
+3. **Time Conversion**: If the client provides a time in their local timezone, convert it to Moscow time (UTC+3) before making the API call
+4. **Pagination**: Default page size is 100 records; use pagination for large datasets
+5. **Data interpretation**: Present data in a clear, user-friendly format
+6. **Privacy**: Only retrieve data for the authenticated user
+7. **Error handling**: Provide clear error messages if the API returns an error
 
 ## Common Use Cases
+
+### Getting All Health Statistics at Once
+```
+Client: "Show me all my health data for yesterday"
+Agent: [Calls getAllHealthStatistics with from="2025-03-24T00:00:00 +03:00", to="2025-03-24T23:59:59 +03:00"]
+
+Response example:
+{
+  "heartRate": { "content": [...100 records...], "totalElements": 288, "isLast": false },
+  "sleep": { "content": [...1 record...], "totalElements": 1, "isLast": true },
+  "hasMoreData": {
+    "heartRate": true,
+    "sleep": false,
+    "steps": false,
+    "stress": false,
+    "spo2": false,
+    "hrv": false,
+    "temperature": false,
+    "any": true
+  }
+}
+
+Agent: "Here's your health summary for March 24:
+- Heart Rate: 100 of 288 measurements ⚠️ (showing first 8 hours)
+- Sleep: 1 session (complete)
+- Steps: 1 record (complete)
+- Stress: 45 measurements (complete)
+- SpO2: 100 of 150 measurements ⚠️
+- HRV: 80 measurements (complete)
+- Temperature: 100 of 120 measurements ⚠️
+
+⚠️ Some data is truncated. Would you like to see the complete heart rate data for the full day?"
+```
 
 ### Checking Today's Steps
 ```
 Client: "How many steps did I take today?"
-Agent: [Calls getSyncStep with from="2025-03-25T00:00:00 +03:00" and to="2025-03-25T23:59:59 +03:00"]
+Agent: [Calls getSyncStep with from="2025-03-25T00:00:00 +03:00" and to="2025-03-25T23:59:59 +03:00" (Moscow time)]
 "Today you took [step] steps, covering [distance] km and burning [calories] calories."
 ```
 
