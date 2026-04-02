@@ -41,6 +41,7 @@ public class GetAllHealthStatisticsTool {
         this.properties = properties;
     }
 
+    // TODO: заставлять отправлять timestamp без пробела
     @McpTool(description = """
         Получить сводку здоровья Smart Ring за период.
         Возвращает первые N записей по каждому типу данных (по умолчанию 100).

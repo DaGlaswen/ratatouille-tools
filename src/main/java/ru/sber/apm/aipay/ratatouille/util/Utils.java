@@ -36,11 +36,17 @@ public class Utils {
                 .replace("Z", "+00:00");
     }
 
+    /**
+     * Формат ISO 8601 с timezone (без пробела): 2026-03-30T00:00:00+03:00
+     */
     private static final DateTimeFormatter ISO_FORMATTER =
-            DateTimeFormatter.ISO_OFFSET_DATE_TIME;
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX");
 
     /**
-     * Конвертирует дату из ISO 8601 формата (yyyy-MM-dd'T'HH:mm:ss XXX) в Unix timestamp (секунды)
+     * Конвертирует дату из ISO 8601 формата в Unix timestamp (секунды)
+     * Поддерживаемые форматы:
+     * - yyyy-MM-dd'T'HH:mm:ss +03:00 (с пробелом)
+     * - yyyy-MM-dd'T'HH:mm:ss+03:00 (без пробела)
      *
      * @param isoDate   дата в формате ISO 8601
      * @param paramName имя параметра для логирования ошибок
@@ -52,11 +58,14 @@ public class Utils {
             return null;
         }
         try {
-            OffsetDateTime odt = OffsetDateTime.parse(isoDate, ISO_FORMATTER);
+            // Нормализуем дату: убираем пробел перед timezone для совместимости
+            // 2026-03-30T00:00:00 +03:00 -> 2026-03-30T00:00:00+03:00
+            String normalizedDate = isoDate.replace(" +", "+").replace(" -", "-");
+            OffsetDateTime odt = OffsetDateTime.parse(normalizedDate, ISO_FORMATTER);
             return odt.toEpochSecond();
         } catch (Exception e) {
-            logger.error("Ошибка парсинга даты {}='{}'. Ожидаемый формат: yyyy-MM-dd'T'HH:mm:ss XXX", paramName, isoDate, e);
-            throw SmartRingApiException.badRequest("Неверный формат даты для параметра " + paramName + ". Ожидаемый формат ISO 8601: yyyy-MM-dd'T'HH:mm:ss XXX");
+            logger.error("Ошибка парсинга даты {}='{}'. Ожидаемый формат: yyyy-MM-dd'T'HH:mm:ss +03:00", paramName, isoDate, e);
+            throw SmartRingApiException.badRequest("Неверный формат даты для параметра " + paramName + ". Ожидаемый формат ISO 8601: yyyy-MM-dd'T'HH:mm:ss +03:00 (пробел перед timezone опционален)");
         }
     }
 

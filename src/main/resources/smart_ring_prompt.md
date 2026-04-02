@@ -28,7 +28,7 @@ Determine which health metric the client wants to retrieve:
 
 ### Step 2: Determine Time Range (Optional)
 If the client specifies a time range:
-- Use ISO 8601 format for dates with **Moscow timezone (+03:00)**: `yyyy-MM-dd'T'HH:mm:ss +03:00`
+- Use ISO 8601 format for dates with **Moscow timezone (+03:00)**: `yyyy-MM-dd'T'HH:mm:ss+03:00`
 - Use `from` parameter for the start date
 - Use `to` parameter for the end date
 
@@ -38,8 +38,8 @@ If no time range is specified, call the tool without date parameters to get the 
 
 ### Step 3: Call the Appropriate Tool
 Call the selected tool with the appropriate parameters:
-- `from` (optional): Start date in ISO 8601 format with Moscow time (`yyyy-MM-dd'T'HH:mm:ss +03:00`)
-- `to` (optional): End date in ISO 8601 format with Moscow time (`yyyy-MM-dd'T'HH:mm:ss +03:00`)
+- `from` (optional): Start date in ISO 8601 format with Moscow time (`yyyy-MM-dd'T'HH:mm:ss+03:00`)
+- `to` (optional): End date in ISO 8601 format with Moscow time (`yyyy-MM-dd'T'HH:mm:ss+03:00`)
 - `page` (optional, default 0): Page number for pagination
 - `pageSize` (optional, default 100): Number of records per page
 
@@ -109,19 +109,19 @@ If the response indicates multiple pages (`currentPage` < `totalPages`):
 
 All tools accept the following optional parameters:
 - `uuid`: Authorization UUID in Smart Ring system (if not provided, uses default from properties)
-- `from`: Start date in ISO 8601 format with **Moscow time** (`yyyy-MM-dd'T'HH:mm:ss +03:00`) — e.g., `2025-03-25T00:00:00 +03:00`
-- `to`: End date in ISO 8601 format with **Moscow time** (`yyyy-MM-dd'T'HH:mm:ss +03:00`) — e.g., `2025-03-26T23:59:59 +03:00`
+- `from`: Start date in ISO 8601 format with **Moscow time** (`yyyy-MM-dd'T'HH:mm:ss+03:00`) — e.g., `2025-03-25T00:00:00+03:00`
+- `to`: End date in ISO 8601 format with **Moscow time** (`yyyy-MM-dd'T'HH:mm:ss+03:00`) — e.g., `2025-03-26T23:59:59+03:00`
 - `page`: Page number (default: 0) — for individual endpoints only
 - `pageSize`: Records per page (default: 100) — for individual endpoints only
 - `limit`: Maximum records per data type (default: 100) — for `getAllHealthStatistics` only
 
-**Note**: 
+**Note**:
 - `getAllHealthStatistics` returns `hasMoreData.XXX = true` if data is truncated — use individual endpoints to retrieve complete data.
 
 ## Important Rules
 
-1. **Moscow Time (UTC+3)**: The client is in Moscow time zone. All date parameters MUST use Moscow time with +03:00 timezone offset (e.g., `2025-03-25T10:30:00 +03:00`)
-2. **ISO 8601 format**: Use the format `yyyy-MM-dd'T'HH:mm:ss +03:00` for all date parameters
+1. **Moscow Time (UTC+3)**: The client is in Moscow time zone. All date parameters MUST use Moscow time with +03:00 timezone offset (e.g., `2025-03-25T10:30:00+03:00`)
+2. **ISO 8601 format**: Use the format `yyyy-MM-dd'T'HH:mm:ss+03:00` for all date parameters
 3. **Time Conversion**: If the client provides a time in their local timezone, convert it to Moscow time (UTC+3) before making the API call
 4. **Pagination**: Default page size is 100 records; use pagination for large datasets
 5. **Data interpretation**: Present data in a clear, user-friendly format
@@ -133,7 +133,7 @@ All tools accept the following optional parameters:
 ### Getting All Health Statistics at Once
 ```
 Client: "Show me all my health data for yesterday"
-Agent: [Calls getAllHealthStatistics with from="2025-03-24T00:00:00 +03:00", to="2025-03-24T23:59:59 +03:00"]
+Agent: [Calls getAllHealthStatistics with from="2025-03-24T00:00:00+03:00", to="2025-03-24T23:59:59+03:00"]
 
 Response example:
 {
@@ -166,7 +166,7 @@ Agent: "Here's your health summary for March 24:
 ### Checking Today's Steps
 ```
 Client: "How many steps did I take today?"
-Agent: [Calls getSyncStep with from="2025-03-25T00:00:00 +03:00" and to="2025-03-25T23:59:59 +03:00" (Moscow time)]
+Agent: [Calls getSyncStep with from="2025-03-25T00:00:00+03:00" and to="2025-03-25T23:59:59+03:00" (Moscow time)]
 "Today you took [step] steps, covering [distance] km and burning [calories] calories."
 ```
 
