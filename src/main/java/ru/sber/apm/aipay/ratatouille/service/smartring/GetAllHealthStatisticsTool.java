@@ -23,6 +23,8 @@ import ru.sber.apm.aipay.ratatouille.util.smartring.SmartRingUtils;
 
 import java.net.URI;
 import java.time.Instant;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -60,21 +62,38 @@ public class GetAllHealthStatisticsTool {
         logger.info("Запрос всей статистики здоровья: uuid={}, from={}, to={}, limit={}",
                 maskedUuid, from, to, effectiveLimit);
 
-        // Запускаем все запросы параллельно с limit вместо page/pageSize
+        // Map для сбора ошибок
+        Map<String, String> errors = new HashMap<>();
+
+        // Запускаем все запросы параллельно, ошибки собираем в map
         CompletableFuture<ExternalAppPageHeartRateResponseDto> heartRateFuture =
-                CompletableFuture.supplyAsync(() -> fetchHeartRate(effectiveUuid, from, to, effectiveLimit), executor);
+                exceptionHandlingFuture(
+                        CompletableFuture.supplyAsync(() -> fetchHeartRate(effectiveUuid, from, to, effectiveLimit), executor),
+                        "heartRate", errors);
         CompletableFuture<ExternalAppPageSleepResponseDtoV3> sleepFuture =
-                CompletableFuture.supplyAsync(() -> fetchSleep(effectiveUuid, from, to, effectiveLimit), executor);
+                exceptionHandlingFuture(
+                        CompletableFuture.supplyAsync(() -> fetchSleep(effectiveUuid, from, to, effectiveLimit), executor),
+                        "sleep", errors);
         CompletableFuture<ExternalAppPageStepResponseDto> stepsFuture =
-                CompletableFuture.supplyAsync(() -> fetchSteps(effectiveUuid, from, to, effectiveLimit), executor);
+                exceptionHandlingFuture(
+                        CompletableFuture.supplyAsync(() -> fetchSteps(effectiveUuid, from, to, effectiveLimit), executor),
+                        "steps", errors);
         CompletableFuture<ExternalAppPageStressResponseDto> stressFuture =
-                CompletableFuture.supplyAsync(() -> fetchStress(effectiveUuid, from, to, effectiveLimit), executor);
+                exceptionHandlingFuture(
+                        CompletableFuture.supplyAsync(() -> fetchStress(effectiveUuid, from, to, effectiveLimit), executor),
+                        "stress", errors);
         CompletableFuture<ExternalAppPageSpo2ResponseDto> spo2Future =
-                CompletableFuture.supplyAsync(() -> fetchSpo2(effectiveUuid, from, to, effectiveLimit), executor);
+                exceptionHandlingFuture(
+                        CompletableFuture.supplyAsync(() -> fetchSpo2(effectiveUuid, from, to, effectiveLimit), executor),
+                        "spo2", errors);
         CompletableFuture<ExternalAppPageHrvResponseDto> hrvFuture =
-                CompletableFuture.supplyAsync(() -> fetchHrv(effectiveUuid, from, to, effectiveLimit), executor);
+                exceptionHandlingFuture(
+                        CompletableFuture.supplyAsync(() -> fetchHrv(effectiveUuid, from, to, effectiveLimit), executor),
+                        "hrv", errors);
         CompletableFuture<ExternalAppPageTemperatureResponseDto> temperatureFuture =
-                CompletableFuture.supplyAsync(() -> fetchTemperature(effectiveUuid, from, to, effectiveLimit), executor);
+                exceptionHandlingFuture(
+                        CompletableFuture.supplyAsync(() -> fetchTemperature(effectiveUuid, from, to, effectiveLimit), executor),
+                        "temperature", errors);
 
         // Ждем завершения всех запросов
         CompletableFuture.allOf(
@@ -124,6 +143,7 @@ public class GetAllHealthStatisticsTool {
                 .requestedUuid(maskedUuid)
                 .timestamp(Instant.now().getEpochSecond())
                 .hasMoreData(hasMoreData)
+                .errors(errors.isEmpty() ? null : errors)
                 .build();
 
         logger.info("Получена вся статистика здоровья: heartRate={} (more={}), sleep={} (more={}), steps={} (more={}), stress={} (more={}), spo2={} (more={}), hrv={} (more={}), temperature={} (more={})",
@@ -136,6 +156,19 @@ public class GetAllHealthStatisticsTool {
                 temperature != null && temperature.getContent() != null ? temperature.getContent().size() : 0, hasMoreTemperature);
 
         return response;
+    }
+
+    /**
+     * Оборачивает CompletableFuture в обработчик исключений.
+     * При ошибке сохраняет её в map и возвращает null вместо проброса исключения.
+     */
+    private <T> CompletableFuture<T> exceptionHandlingFuture(CompletableFuture<T> future, String metricName, Map<String, String> errors) {
+        return future.exceptionally(ex -> {
+            String errorMsg = ex.getCause() != null ? ex.getCause().getMessage() : ex.getMessage();
+            logger.error("Ошибка получения данных метрики {}: {}", metricName, errorMsg);
+            errors.put(metricName, errorMsg);
+            return null;
+        });
     }
 
     /**
@@ -169,101 +202,66 @@ public class GetAllHealthStatisticsTool {
     }
 
     private ExternalAppPageHeartRateResponseDto fetchHeartRate(String uuid, String from, String to, Integer limit) {
-        try {
-            URI uri = buildUri("/heartrate", from, to, limit);
-            return restClient.get()
-                    .uri(uri)
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + uuid)
-                    .retrieve()
-                    .body(ExternalAppPageHeartRateResponseDto.class);
-        } catch (Exception e) {
-            logger.error("Ошибка получения данных пульса: {}", e.getMessage());
-            return null;
-        }
+        URI uri = buildUri("/heartrate", from, to, limit);
+        return restClient.get()
+                .uri(uri)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + uuid)
+                .retrieve()
+                .body(ExternalAppPageHeartRateResponseDto.class);
     }
 
     private ExternalAppPageSleepResponseDtoV3 fetchSleep(String uuid, String from, String to, Integer limit) {
-        try {
-            URI uri = buildUri("/sleep", from, to, limit);
-            return restClient.get()
-                    .uri(uri)
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + uuid)
-                    .retrieve()
-                    .body(ExternalAppPageSleepResponseDtoV3.class);
-        } catch (Exception e) {
-            logger.error("Ошибка получения данных сна: {}", e.getMessage());
-            return null;
-        }
+        URI uri = buildUri("/sleep", from, to, limit);
+        return restClient.get()
+                .uri(uri)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + uuid)
+                .retrieve()
+                .body(ExternalAppPageSleepResponseDtoV3.class);
     }
 
     private ExternalAppPageStepResponseDto fetchSteps(String uuid, String from, String to, Integer limit) {
-        try {
-            URI uri = buildUri("/step", from, to, limit);
-            return restClient.get()
-                    .uri(uri)
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + uuid)
-                    .retrieve()
-                    .body(ExternalAppPageStepResponseDto.class);
-        } catch (Exception e) {
-            logger.error("Ошибка получения данных шагов: {}", e.getMessage());
-            return null;
-        }
+        URI uri = buildUri("/step", from, to, limit);
+        return restClient.get()
+                .uri(uri)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + uuid)
+                .retrieve()
+                .body(ExternalAppPageStepResponseDto.class);
     }
 
     private ExternalAppPageStressResponseDto fetchStress(String uuid, String from, String to, Integer limit) {
-        try {
-            URI uri = buildUri("/stress", from, to, limit);
-            return restClient.get()
-                    .uri(uri)
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + uuid)
-                    .retrieve()
-                    .body(ExternalAppPageStressResponseDto.class);
-        } catch (Exception e) {
-            logger.error("Ошибка получения данных стресса: {}", e.getMessage());
-            return null;
-        }
+        URI uri = buildUri("/stress", from, to, limit);
+        return restClient.get()
+                .uri(uri)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + uuid)
+                .retrieve()
+                .body(ExternalAppPageStressResponseDto.class);
     }
 
     private ExternalAppPageSpo2ResponseDto fetchSpo2(String uuid, String from, String to, Integer limit) {
-        try {
-            URI uri = buildUri("/spo2", from, to, limit);
-            return restClient.get()
-                    .uri(uri)
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + uuid)
-                    .retrieve()
-                    .body(ExternalAppPageSpo2ResponseDto.class);
-        } catch (Exception e) {
-            logger.error("Ошибка получения данных SpO2: {}", e.getMessage());
-            return null;
-        }
+        URI uri = buildUri("/spo2", from, to, limit);
+        return restClient.get()
+                .uri(uri)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + uuid)
+                .retrieve()
+                .body(ExternalAppPageSpo2ResponseDto.class);
     }
 
     private ExternalAppPageHrvResponseDto fetchHrv(String uuid, String from, String to, Integer limit) {
-        try {
-            URI uri = buildUri("/hrv", from, to, limit);
-            return restClient.get()
-                    .uri(uri)
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + uuid)
-                    .retrieve()
-                    .body(ExternalAppPageHrvResponseDto.class);
-        } catch (Exception e) {
-            logger.error("Ошибка получения данных HRV: {}", e.getMessage());
-            return null;
-        }
+        URI uri = buildUri("/hrv", from, to, limit);
+        return restClient.get()
+                .uri(uri)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + uuid)
+                .retrieve()
+                .body(ExternalAppPageHrvResponseDto.class);
     }
 
     private ExternalAppPageTemperatureResponseDto fetchTemperature(String uuid, String from, String to, Integer limit) {
-        try {
-            URI uri = buildUri("/temperature", from, to, limit);
-            return restClient.get()
-                    .uri(uri)
-                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + uuid)
-                    .retrieve()
-                    .body(ExternalAppPageTemperatureResponseDto.class);
-        } catch (Exception e) {
-            logger.error("Ошибка получения данных температуры: {}", e.getMessage());
-            return null;
-        }
+        URI uri = buildUri("/temperature", from, to, limit);
+        return restClient.get()
+                .uri(uri)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + uuid)
+                .retrieve()
+                .body(ExternalAppPageTemperatureResponseDto.class);
     }
 
     private URI buildUri(String endpoint, String from, String to, Integer limit) {

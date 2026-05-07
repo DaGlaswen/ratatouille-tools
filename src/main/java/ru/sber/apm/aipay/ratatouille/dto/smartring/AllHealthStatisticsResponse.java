@@ -29,7 +29,10 @@ public class AllHealthStatisticsResponse {
     
     /** Информация о том, есть ли ещё данные для каждого типа */
     private HasMoreDataInfo hasMoreData;
-    
+
+    /** Ошибки загрузки отдельных метрик (ключ — название метрики, значение — текст ошибки) */
+    private java.util.Map<String, String> errors;
+
     @Getter
     @Setter
     @Accessors(chain = true)
