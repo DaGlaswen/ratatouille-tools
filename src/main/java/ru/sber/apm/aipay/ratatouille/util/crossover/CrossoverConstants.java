@@ -19,6 +19,8 @@ public class CrossoverConstants {
     public static final String ENDPOINT_ORDER_CREATE = API_PREFIX + "/order";
     public static final String ENDPOINT_ORDER_LIST = API_PREFIX + "/order/list";
     public static final String ENDPOINT_ORDER_DETAIL = API_PREFIX + "/order/{orderId}";
+    /** Персональные рекомендации (POST) */
+    public static final String ENDPOINT_RECOMMENDATIONS_PERSONAL = API_PREFIX + "/recommendations/personal";
 
     public static final String ENDPOINT_SESSION_ID_WEB = "/sdk-gateway/v1/sessionIdWeb";
 
@@ -46,6 +48,17 @@ public class CrossoverConstants {
     public static final int DEFAULT_PAGE = 1;
     public static final int DEFAULT_LIMIT = 20;
     public static final int MAX_LIMIT = 100;
+
+    // Default/recommendations pagination
+    public static final int DEFAULT_RECOMMENDATIONS_LIMIT = 28;
+    public static final int MAX_RECOMMENDATIONS_LIMIT = 99;
+    public static final int MAX_RECOMMENDATIONS_PAGE = 500;
+
+    // SessionId validation
+    public static final int MIN_SESSION_ID_LENGTH = 4;
+    public static final int MAX_SESSION_ID_LENGTH = 128;
+    /** Допустимые символы sessionId: [0-9A-Za-z_-] */
+    public static final String SESSION_ID_PATTERN = "^[0-9A-Za-z_-]+$";
 
     // Error codes
     public static final int ERROR_CODE_NOT_FOUND = 1;
