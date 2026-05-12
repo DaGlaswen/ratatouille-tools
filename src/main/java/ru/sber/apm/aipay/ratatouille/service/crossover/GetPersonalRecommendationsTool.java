@@ -132,6 +132,7 @@ public class GetPersonalRecommendationsTool {
             PersonalRecommendationsResponse response = restClient.post()
                     .uri(CrossoverConstants.ENDPOINT_RECOMMENDATIONS_PERSONAL)
                     .header(CrossoverConstants.HEADER_AUTHORIZATION, headers.getAuthorization())
+                    .header(CrossoverConstants.HEADER_COOKIE, headers.getCookie())
                     .header(CrossoverConstants.HEADER_RQ_UID, headers.getRqUID())
                     .header(CrossoverConstants.HEADER_TIMESTAMP, headers.getTimestamp())
                     .header(CrossoverConstants.HEADER_LOCAL_SESSION_ID, headers.getLocalSessionId())
