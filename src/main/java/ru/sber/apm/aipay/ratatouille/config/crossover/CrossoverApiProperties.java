@@ -32,4 +32,21 @@ public class CrossoverApiProperties {
      */
     @NotNull
     private Integer timeoutMs = 30000;
+
+    // ─── Дефолты для SDK-заголовков MCP-контекста ───
+
+    /** appName: по умолчанию "ratatouille-mcp" */
+    private String appName = "ratatouille-mcp";
+
+    /** deviceName: по умолчанию "openclaw-gateway" */
+    private String deviceName = "openclaw-gateway";
+
+    /** SDK-версия: по умолчанию "1.0.0" */
+    private String sdkVersion = "1.0.0";
+
+    /** OS-строка: по умолчанию "server" */
+    private String os = "server";
+
+    /** X-System-Id */
+    private String xSystemId;
 }

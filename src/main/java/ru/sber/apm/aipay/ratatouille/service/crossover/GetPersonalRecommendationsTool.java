@@ -14,10 +14,11 @@ import ru.sber.apm.aipay.ratatouille.dto.crossover.CrossoverHeaders;
 import ru.sber.apm.aipay.ratatouille.dto.crossover.PersonalRecommendationsRequest;
 import ru.sber.apm.aipay.ratatouille.dto.crossover.PersonalRecommendationsResponse;
 import ru.sber.apm.aipay.ratatouille.exception.crossover.CrossoverApiException;
-import ru.sber.apm.aipay.ratatouille.util.Utils;
 import ru.sber.apm.aipay.ratatouille.util.crossover.CrossoverConstants;
 import ru.sber.apm.aipay.ratatouille.util.crossover.CrossoverValidationUtil;
 
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
 import static org.springframework.util.StringUtils.truncate;
@@ -35,6 +36,12 @@ import static org.springframework.util.StringUtils.truncate;
  * и сессии (sessionId). sessionId — не http-сессия, а аналитический
  * идентификатор для персонализации рекомендаций.
  *
+ * Заголовки полностью соответствуют 14 canonical headers,
+ * которые ratatouille-web проксирует через x-rat-cxv-* → upstream:
+ * Authorization, Cookie, RqUID, localSessionId, deviceName, appName,
+ * X-System-Id, x-pod-sticky, sdkVersion, OS, UserTm, timestamp,
+ * x-b3-traceid, x-b3-spanid.
+ *
  * На клиенте каждый товар получает categoryId: "personal-recommendations"
  * (плейсхолдер, не поле от API) для отличия от обычных категорий.
  *
@@ -45,6 +52,10 @@ import static org.springframework.util.StringUtils.truncate;
 public class GetPersonalRecommendationsTool {
 
     private static final Logger logger = LoggerFactory.getLogger(GetPersonalRecommendationsTool.class);
+
+    private static final DateTimeFormatter MOSCOW_TS =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final ZoneId MSK = ZoneId.of("Europe/Moscow");
 
     private final RestClient restClient;
     private final CrossoverApiProperties crossoverApiProperties;
@@ -68,7 +79,12 @@ public class GetPersonalRecommendationsTool {
             @McpToolParam(description = "Уникальный идентификатор запроса (генерируется автоматически, если не указан)", required = false) String rqUID,
             @McpToolParam(description = "ID сессии на фронтенде (опционально)", required = false) String localSessionId) {
 
-        String effectiveRqUID = rqUID != null ? rqUID : UUID.randomUUID().toString();
+        String effectiveRqUID = rqUID != null && !rqUID.isBlank() ? rqUID : randomRquid32();
+        String effectiveTraceId = randomRquid32();
+        String effectiveSpanId = randomRquid32().substring(0, 16);
+        String mskTimestamp = MOSCOW_TS.format(java.time.LocalDateTime.now(MSK));
+        String userTm = java.time.OffsetDateTime.now(java.time.ZoneOffset.UTC)
+                .format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
 
         try {
             // Валидация обязательных полей
@@ -86,11 +102,20 @@ public class GetPersonalRecommendationsTool {
             int effectivePage = page != null ? page : CrossoverConstants.DEFAULT_PAGE;
             int effectiveLimit = limit != null ? limit : CrossoverConstants.DEFAULT_RECOMMENDATIONS_LIMIT;
 
+            // Формируем полный набор SDK-заголовков (14 canonical, как в ratatouille-web)
             var headers = CrossoverHeaders.builder()
                     .authorization(crossoverApiProperties.getApiKey())
-                    .timestamp(Utils.getCurrentTimestamp())
                     .rqUID(effectiveRqUID)
                     .localSessionId(localSessionId)
+                    .deviceName(crossoverApiProperties.getDeviceName())
+                    .appName(crossoverApiProperties.getAppName())
+                    .sdkVersion(crossoverApiProperties.getSdkVersion())
+                    .os(crossoverApiProperties.getOs())
+                    .xSystemId(crossoverApiProperties.getXSystemId())
+                    .timestamp(mskTimestamp)
+                    .userTm(userTm)
+                    .xB3Traceid(effectiveTraceId)
+                    .xB3Spanid(effectiveSpanId)
                     .build();
 
             var requestBody = PersonalRecommendationsRequest.builder()
@@ -107,9 +132,18 @@ public class GetPersonalRecommendationsTool {
             PersonalRecommendationsResponse response = restClient.post()
                     .uri(CrossoverConstants.ENDPOINT_RECOMMENDATIONS_PERSONAL)
                     .header(CrossoverConstants.HEADER_AUTHORIZATION, headers.getAuthorization())
-                    .header(CrossoverConstants.HEADER_TIMESTAMP, headers.getTimestamp())
                     .header(CrossoverConstants.HEADER_RQ_UID, headers.getRqUID())
+                    .header(CrossoverConstants.HEADER_TIMESTAMP, headers.getTimestamp())
                     .header(CrossoverConstants.HEADER_LOCAL_SESSION_ID, headers.getLocalSessionId())
+                    .header(CrossoverConstants.HEADER_DEVICE_NAME, headers.getDeviceName())
+                    .header(CrossoverConstants.HEADER_APP_NAME, headers.getAppName())
+                    .header(CrossoverConstants.HEADER_SDK_VERSION, headers.getSdkVersion())
+                    .header(CrossoverConstants.HEADER_OS, headers.getOs())
+                    .header(CrossoverConstants.HEADER_X_SYSTEM_ID, headers.getXSystemId())
+                    .header(CrossoverConstants.HEADER_USER_TM, headers.getUserTm())
+                    .header(CrossoverConstants.HEADER_X_B3_TRACE_ID, headers.getXB3Traceid())
+                    .header(CrossoverConstants.HEADER_X_B3_SPAN_ID, headers.getXB3Spanid())
+                    .header(CrossoverConstants.HEADER_X_POD_STICKY, headers.getXPodSticky())
                     .body(requestBody)
                     .retrieve()
                     .body(PersonalRecommendationsResponse.class);
@@ -176,5 +210,12 @@ public class GetPersonalRecommendationsTool {
             logger.error("Неожиданная ошибка при получении персональных рекомендаций: {}, rqUID={}", e.getMessage(), effectiveRqUID, e);
             throw CrossoverApiException.internalError("Неожиданная ошибка: " + e.getMessage(), e);
         }
+    }
+
+    /**
+     * Генерация RqUID / traceId — аналог randomRquid32 из ratatouille-web.
+     */
+    private static String randomRquid32() {
+        return java.util.UUID.randomUUID().toString().replace("-", "");
     }
 }
