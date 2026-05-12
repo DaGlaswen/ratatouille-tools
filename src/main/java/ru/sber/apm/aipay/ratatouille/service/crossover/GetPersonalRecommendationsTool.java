@@ -73,7 +73,7 @@ public class GetPersonalRecommendationsTool {
         try {
             // Валидация обязательных полей
             CrossoverValidationUtil.requireValidUuid(pointId, "pointId");
-            CrossoverValidationUtil.requireValidUuid(subId, "subId");
+//            CrossoverValidationUtil.requireValidUuid(subId, "subId");
             if (sessionId == null || sessionId.isBlank()) {
                 // Генерируем sessionId автоматически, если не передан
                 sessionId = String.valueOf(System.currentTimeMillis());
