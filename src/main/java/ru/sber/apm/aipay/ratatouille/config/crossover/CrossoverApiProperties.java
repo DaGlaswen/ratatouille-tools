@@ -49,4 +49,10 @@ public class CrossoverApiProperties {
 
     /** X-System-Id */
     private String xSystemId;
+
+    /** x-pod-sticky: по умолчанию пустая строка (отправляется только если задана) */
+    private String xPodSticky;
+
+    /** Cookie сессии (если есть — будет передан в запросе) */
+    private String cookie;
 }

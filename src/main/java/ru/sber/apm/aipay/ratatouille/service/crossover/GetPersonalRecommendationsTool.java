@@ -116,6 +116,8 @@ public class GetPersonalRecommendationsTool {
                     .userTm(userTm)
                     .xB3Traceid(effectiveTraceId)
                     .xB3Spanid(effectiveSpanId)
+                    .cookie(crossoverApiProperties.getCookie())
+                    .xPodSticky(crossoverApiProperties.getXPodSticky())
                     .build();
 
             var requestBody = PersonalRecommendationsRequest.builder()
