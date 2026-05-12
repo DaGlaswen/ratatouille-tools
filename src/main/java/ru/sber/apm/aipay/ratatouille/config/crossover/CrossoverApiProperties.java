@@ -56,5 +56,5 @@ public class CrossoverApiProperties {
     /**
      * Cookie сессии (если есть — будет передан в запросе)
      */
-    private String cookie;
+    private String cookie = "Cookie";
 }
