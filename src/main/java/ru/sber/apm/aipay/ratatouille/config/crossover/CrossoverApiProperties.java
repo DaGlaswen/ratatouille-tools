@@ -48,11 +48,13 @@ public class CrossoverApiProperties {
     private String os = "server";
 
     /** X-System-Id */
-    private String xSystemId;
+    private String xSystemId = "SBERPAY_SDK";
 
     /** x-pod-sticky: по умолчанию пустая строка (отправляется только если задана) */
-    private String xPodSticky;
+    private String xPodSticky = "e425baa5ac1f1d3917a7aee1358b43f3";
 
-    /** Cookie сессии (если есть — будет передан в запросе) */
+    /**
+     * Cookie сессии (если есть — будет передан в запросе)
+     */
     private String cookie;
 }
