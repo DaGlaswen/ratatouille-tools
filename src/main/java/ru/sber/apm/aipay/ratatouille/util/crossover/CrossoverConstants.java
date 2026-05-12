@@ -24,17 +24,26 @@ public class CrossoverConstants {
 
     public static final String ENDPOINT_SESSION_ID_WEB = "/sdk-gateway/v1/sessionIdWeb";
 
-    // Header names
+    // ─── All 14 upstream canonical headers (CXV_HEADER_SLUG_TO_UPSTREAM mapping) ───
+    // Core
     public static final String HEADER_AUTHORIZATION = "Authorization";
-    public static final String HEADER_TIMESTAMP = "timestamp";
-    public static final String HEADER_RQ_UID = "rqUID";
+    public static final String HEADER_COOKIE = "Cookie";
+    public static final String HEADER_RQ_UID = "RqUID";
     public static final String HEADER_LOCAL_SESSION_ID = "localSessionId";
-
-    public static final String HEADER_X_B3_SPAN_ID = "x-b3-spanid";
-    public static final String HEADER_X_SYSTEM_ID = "X-System-Id";
-    public static final String HEADER_X_B3_TRACE_ID = "x-b3-traceid";
+    // Device / app
+    public static final String HEADER_DEVICE_NAME = "deviceName";
     public static final String HEADER_APP_NAME = "appName";
+    public static final String HEADER_OS = "OS";
+    public static final String HEADER_SDK_VERSION = "sdkVersion";
+    public static final String HEADER_X_SYSTEM_ID = "X-System-Id";
+    // Timing
+    public static final String HEADER_TIMESTAMP = "timestamp";
     public static final String HEADER_USER_TM = "UserTm";
+    // Tracing
+    public static final String HEADER_X_B3_TRACE_ID = "x-b3-traceid";
+    public static final String HEADER_X_B3_SPAN_ID = "x-b3-spanid";
+    // Sticky
+    public static final String HEADER_X_POD_STICKY = "x-pod-sticky";
 
     // Query param names
     public static final String PARAM_EXT_BRANCH_ID = "extBranchId";
