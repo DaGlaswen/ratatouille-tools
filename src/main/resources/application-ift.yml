@@ -1,0 +1,12 @@
+# Spring-профиль для ИФТ-инстанса ratatouille-tools (порт 9196).
+# Активировать: --spring.profiles.active=ift
+# Перекрывает crossover.api из application.yml.
+# IFT_CROSSOVER_API_KEY должен быть в окружении (уже есть на cloud-iya).
+
+server:
+  port: 9196
+
+crossover:
+  api:
+    base-url: https://ift.gate1.spaymentextra.ru/
+    apiKey: ${IFT_CROSSOVER_API_KEY}
